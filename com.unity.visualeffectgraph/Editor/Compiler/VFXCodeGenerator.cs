@@ -457,20 +457,19 @@ namespace UnityEditor.VFX
 
             //< Final composition
             var renderPipePath = UnityEngine.Experimental.VFX.VFXManager.renderPipeSettingsPath;
-            var renderPipeShaderIncludePath = renderPipePath;
             string renderPipeCommon = "Packages/com.unity.visualeffectgraph/Shaders/Common/VFXCommonCompute.cginc";
             string renderPipePasses = null;
             string renderPipeDefines = null;
 
             if (!context.codeGeneratorCompute && !string.IsNullOrEmpty(renderPipePath))
             {
-                renderPipeCommon = renderPipeShaderIncludePath + "/VFXCommon.cginc";
+                renderPipeCommon = renderPipePath + "/VFXCommon.cginc";
                 renderPipePasses = renderPipePath + "/VFXPasses.template";
-                renderPipeDefines = renderPipeShaderIncludePath + "/VFXGlobalDefines.cginc";
+                renderPipeDefines = renderPipePath + "/VFXGlobalDefines.cginc";
             }
 
             var globalIncludeContent = new VFXShaderWriter();
-            globalIncludeContent.WriteLine("#include \"HLSLSupport.cginc\"");
+            globalIncludeContent.WriteLineFormat("#include \"{0}/VFXSupport.hlsl\"", renderPipePath);
             globalIncludeContent.WriteLine("#define NB_THREADS_PER_GROUP 64");
             foreach (var attribute in context.GetData().GetAttributes().Where(a => (context.contextType == VFXContextType.kInit && context.GetData().IsAttributeStored(a.attrib)) || (context.GetData().IsAttributeUsed(a.attrib, context))))
                 globalIncludeContent.WriteLineFormat("#define VFX_USE_{0}_{1} 1", attribute.attrib.name.ToUpper(), "CURRENT");
