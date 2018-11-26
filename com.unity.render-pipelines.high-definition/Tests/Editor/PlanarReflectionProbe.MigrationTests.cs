@@ -120,7 +120,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                     Assert.AreEqual((HDAdditionalCameraData.ClearColorMode)legacyProbeData.clearColorMode, settings.camera.bufferClearing.clearColorMode);
                     Assert.AreEqual(legacyProbeData.backgroundColorHDR, settings.camera.bufferClearing.backgroundColorHDR);
                     Assert.AreEqual(legacyProbeData.clearDepth, settings.camera.bufferClearing.clearDepth);
-                    Assert.AreEqual(legacyProbeData.cullingMask, settings.camera.culling.cullingMask);
+                    Assert.AreEqual(legacyProbeData.cullingMask, (int)settings.camera.culling.cullingMask);
                     Assert.AreEqual(legacyProbeData.useOcclusionCulling, settings.camera.culling.useOcclusionCulling);
                     Assert.AreEqual(legacyProbeData.volumeLayerMask, (int)settings.camera.volumes.layerMask);
                     Assert.AreEqual(legacyProbeData.nearClipPlane, settings.camera.frustum.nearClipPlane);

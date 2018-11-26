@@ -109,7 +109,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                 }
                 // Culling
                 Assert.AreEqual(settings.culling.useOcclusionCulling, cam.useOcclusionCulling);
-                Assert.AreEqual(settings.culling.cullingMask, cam.cullingMask);
+                Assert.AreEqual(settings.culling.cullingMask, (LayerMask)cam.cullingMask);
                 // Buffer clearing
                 Assert.AreEqual(settings.bufferClearing.clearColorMode, add.clearColorMode);
                 Assert.AreEqual(settings.bufferClearing.backgroundColorHDR, add.backgroundColorHDR);
