@@ -86,6 +86,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         bool m_IsDebugRegistered = false;
         string m_CameraRegisterName;
 
+        public bool IsDebugRegistred()
+        {
+            return m_IsDebugRegistered;
+        }
+
         // When we are a preview, there is no way inside Unity to make a distinction between camera preview and material preview.
         // This property allow to say that we are an editor camera preview when the type is preview.
         public bool isEditorCameraPreview { get; set; }
@@ -167,6 +172,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 if (m_camera.cameraType != CameraType.Preview && m_camera.cameraType != CameraType.Reflection)
                 {
                     FrameSettings.RegisterDebug(m_camera.name, GetFrameSettings());
+                    DebugDisplaySettings.RegisterCamera(m_camera.name);
                 }
                 m_CameraRegisterName = m_camera.name;
                 m_IsDebugRegistered = true;
@@ -183,6 +189,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 if (m_camera.cameraType != CameraType.Preview && m_camera.cameraType != CameraType.Reflection)
                 {
                     FrameSettings.UnRegisterDebug(m_CameraRegisterName);
+                    DebugDisplaySettings.UnRegisterCamera(m_CameraRegisterName);
                 }
                 m_IsDebugRegistered = false;
             }

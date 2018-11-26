@@ -57,12 +57,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                         mode = RandomUtilities.RandomEnum<CameraSettings.Frustum.Mode>(i * 2.5f),
                         projectionMatrix = perspectiveMatrix
                     },
-                    physical = new CameraSettings.Physical
-                    {
-                        iso = RandomUtilities.RandomFloat(i, 7253.02142f) * 10000 + 13000,
-                        shutterSpeed = RandomUtilities.RandomFloat(i, 5601.1486f) * 0.3f + 0.5f,
-                        aperture = RandomUtilities.RandomFloat(i, 82141.301f) * 0.3f + 0.5f
-                    },
                     volumes = new CameraSettings.Volumes
                     {
                         anchorOverride = null,
@@ -123,10 +117,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                 // Volumes
                 Assert.AreEqual(settings.volumes.layerMask, add.volumeLayerMask);
                 Assert.AreEqual(settings.volumes.anchorOverride, add.volumeAnchorOverride);
-                // Physical Parameters
-                Assert.AreEqual(settings.physical.aperture, add.aperture);
-                Assert.AreEqual(settings.physical.shutterSpeed, add.shutterSpeed);
-                Assert.AreEqual(settings.physical.iso, add.iso);
                 // HD Specific
                 Assert.AreEqual(settings.renderingPath, add.renderingPath);
 

@@ -368,6 +368,25 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         int m_DebugSelectedLightShadowIndex;
         int m_DebugSelectedLightShadowCount;
 
+        public ComputeBuffer GetBigTileLightList()
+        {
+            return s_BigTileLightList;
+        }
+        public int GetNumTileBigTileX(HDCamera hdCamera)
+        {
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.x, LightDefinitions.s_TileSizeBigTile);
+        }
+
+        public int GetNumTileBigTileY(HDCamera hdCamera)
+        {
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.y, LightDefinitions.s_TileSizeBigTile);
+        }
+
+        public int GetNumTileFtplX(HDCamera hdCamera)
+        {
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.x, LightDefinitions.s_TileSizeFptl);
+        }
+
         void InitShadowSystem(HDRenderPipelineAsset hdAsset)
         {
             m_ShadowInitParameters = hdAsset.GetRenderPipelineSettings().hdShadowInitParams;
@@ -384,21 +403,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         {
             m_ShadowManager.Dispose();
             m_ShadowManager = null;
-        }
-
-        int GetNumTileBigTileX(HDCamera hdCamera)
-        {
-            return HDUtils.DivRoundUp((int)hdCamera.screenSize.x, LightDefinitions.s_TileSizeBigTile);
-        }
-
-        int GetNumTileBigTileY(HDCamera hdCamera)
-        {
-            return HDUtils.DivRoundUp((int)hdCamera.screenSize.y, LightDefinitions.s_TileSizeBigTile);
-        }
-
-        int GetNumTileFtplX(HDCamera hdCamera)
-        {
-            return HDUtils.DivRoundUp((int)hdCamera.screenSize.x, LightDefinitions.s_TileSizeFptl);
         }
 
         int GetNumTileFtplY(HDCamera hdCamera)
@@ -574,14 +578,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // Setup shadow algorithms
             var shadowParams = hdAsset.renderPipelineSettings.hdShadowInitParams;
-            var punctualShadowKeywords = new[]{"PUNCTUAL_SHADOW_LOW", "PUNCTUAL_SHADOW_MEDIUM", "PUNCTUAL_SHADOW_HIGH"};
-            var directionalShadowKeywords = new[]{"DIRECTIONAL_SHADOW_LOW", "DIRECTIONAL_SHADOW_MEDIUM", "DIRECTIONAL_SHADOW_HIGH"};
-            foreach (var p in punctualShadowKeywords)
+            var shadowKeywords = new[]{"SHADOW_LOW", "SHADOW_MEDIUM", "SHADOW_HIGH"};
+            foreach (var p in shadowKeywords)
                 Shader.DisableKeyword(p);
-            foreach (var p in directionalShadowKeywords)
-                Shader.DisableKeyword(p);
-            Shader.EnableKeyword(punctualShadowKeywords[(int)shadowParams.punctualShadowQuality]);
-            Shader.EnableKeyword(directionalShadowKeywords[(int)shadowParams.directionalShadowQuality]);
+            Shader.EnableKeyword(shadowKeywords[(int)shadowParams.shadowQuality]);
 
             InitShadowSystem(hdAsset);
 
@@ -2414,6 +2414,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 cmd.SetGlobalInt(HDShaderIDs._NumTileClusteredX, GetNumTileClusteredX(hdCamera));
                 cmd.SetGlobalInt(HDShaderIDs._NumTileClusteredY, GetNumTileClusteredY(hdCamera));
 
+                cmd.SetGlobalInt(HDShaderIDs._EnableSSRefraction, hdCamera.frameSettings.enableRoughRefraction ? 1 : 0);
+
                 if (m_FrameSettings.lightLoopSettings.enableBigTilePrepass)
                     cmd.SetGlobalBuffer(HDShaderIDs.g_vBigTileLightList, s_BigTileLightList);
 
@@ -2436,6 +2438,20 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     // Set up clustered lighting for volumetrics.
                     cmd.SetGlobalBuffer(HDShaderIDs.g_vLightListGlobal, s_PerVoxelLightLists);
                 }
+
+                // Push global params
+                AdditionalShadowData sunShadowData = m_CurrentSunLight != null ? m_CurrentSunLight.GetComponent<AdditionalShadowData>() : null;
+                bool sunLightShadow = sunShadowData != null && m_CurrentShadowSortedSunLightIndex >= 0;
+                if (sunLightShadow)
+                {
+                    cmd.SetGlobalInt(HDShaderIDs._DirectionalShadowIndex, m_CurrentShadowSortedSunLightIndex);
+                }
+                else
+                {
+                    cmd.SetGlobalInt(HDShaderIDs._DirectionalShadowIndex, -1);
+                }
+
+
             }
         }
 
@@ -2450,24 +2466,25 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public bool outputSplitLighting;
         }
 
-        public void RenderScreenSpaceShadows(HDCamera hdCamera, RTHandleSystem.RTHandle deferredShadowRT, RenderTargetIdentifier depthTexture, int firstMipOffsetY, CommandBuffer cmd)
+        public void SetScreenSpaceShadowsTexture(HDCamera hdCamera, RTHandleSystem.RTHandle deferredShadowRT, CommandBuffer cmd)
         {
             AdditionalShadowData sunShadowData = m_CurrentSunLight != null ? m_CurrentSunLight.GetComponent<AdditionalShadowData>() : null;
-            bool sunLightShadow =  sunShadowData != null && m_CurrentShadowSortedSunLightIndex >= 0;
-            if (sunLightShadow)
-            {
-                cmd.SetGlobalInt(HDShaderIDs._DirectionalShadowIndex, m_CurrentShadowSortedSunLightIndex);
-            }
-            else
-            {
-                cmd.SetGlobalInt(HDShaderIDs._DirectionalShadowIndex, -1);
-            }
-
-            // if there is no need to compute contact shadows, we just quit
             bool needsContactShadows = (m_CurrentSunLight != null && sunShadowData != null && sunShadowData.contactShadows) || m_DominantLightIndex != -1;
             if (!m_EnableContactShadow || !needsContactShadows)
             {
                 cmd.SetGlobalTexture(HDShaderIDs._DeferredShadowTexture, RuntimeUtilities.blackTexture);
+                return;
+            }
+            cmd.SetGlobalTexture(HDShaderIDs._DeferredShadowTexture, deferredShadowRT);
+        }
+
+        public void RenderScreenSpaceShadows(HDCamera hdCamera, RTHandleSystem.RTHandle deferredShadowRT, RenderTargetIdentifier depthTexture, int firstMipOffsetY, CommandBuffer cmd)
+        {
+            AdditionalShadowData sunShadowData = m_CurrentSunLight != null ? m_CurrentSunLight.GetComponent<AdditionalShadowData>() : null;
+            // if there is no need to compute contact shadows, we just quit
+            bool needsContactShadows = (m_CurrentSunLight != null && sunShadowData != null && sunShadowData.contactShadows) || m_DominantLightIndex != -1;
+            if (!m_EnableContactShadow || !needsContactShadows)
+            {
                 return;
             }
 
@@ -2521,8 +2538,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     cmd.SetGlobalInt(HDShaderIDs._ComputeEyeIndex, (int)eye);
                     cmd.DispatchCompute(screenSpaceShadowComputeShader, kernel, numTilesX, numTilesY, 1);
                 }
-
-                cmd.SetGlobalTexture(HDShaderIDs._DeferredShadowTexture, deferredShadowRT);
             }
         }
 
