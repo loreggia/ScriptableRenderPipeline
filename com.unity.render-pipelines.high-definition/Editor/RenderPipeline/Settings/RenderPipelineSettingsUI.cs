@@ -34,10 +34,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         static readonly GUIContent k_SupportMotionVectorContent = CoreEditorUtils.GetContent("Motion Vectors|Motion vector are use for Motion Blur, TAA, temporal re-projection of various effect like SSR.");
         static readonly GUIContent k_SupportRuntimeDebugDisplayContent = CoreEditorUtils.GetContent("Runtime debug display|Remove all debug display shader variant only in the player. Allow faster build.");
         static readonly GUIContent k_SupportDitheringCrossFadeContent = CoreEditorUtils.GetContent("Dithering cross fade|Remove all dithering cross fade shader variant only in the player. Allow faster build.");
-        static readonly GUIContent k_SupportDistortion = CoreEditorUtils.GetContent("Distortion|Remove all distortion shader variants only in the player. Allow faster build."));
-        static readonly GUIContent k_SupportTransparentBackface = CoreEditorUtils.GetContent("Transparent Backface|Remove all Transparent backface shader variants only in the player. Allow faster build."));
-        static readonly GUIContent k_SupportTransparentDepthPrepass = CoreEditorUtils.GetContent("Transparent Depth Prepass|Remove all Transparent Depth Prepass shader variants only in the player. Allow faster build."));
-        static readonly GUIContent k_SupportTransparentDepthPostpass = CoreEditorUtils.GetContent("Transparent Depth Postpass|Remove all Transparent Depth Postpass shader variants only in the player. Allow faster build."));
+        static readonly GUIContent k_SupportDistortion = CoreEditorUtils.GetContent("Distortion|Remove all distortion shader variants only in the player. Allow faster build.");
+        static readonly GUIContent k_SupportTransparentBackface = CoreEditorUtils.GetContent("Transparent Backface|Remove all Transparent backface shader variants only in the player. Allow faster build.");
+        static readonly GUIContent k_SupportTransparentDepthPrepass = CoreEditorUtils.GetContent("Transparent Depth Prepass|Remove all Transparent Depth Prepass shader variants only in the player. Allow faster build.");
+        static readonly GUIContent k_SupportTransparentDepthPostpass = CoreEditorUtils.GetContent("Transparent Depth Postpass|Remove all Transparent Depth Postpass shader variants only in the player. Allow faster build.");
 
         static RenderPipelineSettingsUI()
         {
