@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed decals with stereo rendering
 - Fixed flip logic for postprocessing + VR
 - Fixed copyStencilBuffer pass for Switch
+- Fixed Metal specific issues with decals, hitting a sampler limit and compiling AxF shader
 
 ### Changed
 - Removing the simple lightloop used by the simple lit shader
