@@ -37,6 +37,8 @@ namespace UnityEngine.VFX.Test
             Time.captureFramerate = captureFrameRate;
             UnityEngine.Experimental.VFX.VFXManager.fixedTimeStep = frequency;
             UnityEngine.Experimental.VFX.VFXManager.maxDeltaTime = frequency;
+
+            Debug.unityLogger.logEnabled = false; //Temporary : a compilation error is expected since we didn't update all vfx after include change
         }
 
         static readonly string[] ExcludedTestsButKeepLoadScene =
@@ -71,7 +73,6 @@ namespace UnityEngine.VFX.Test
             {
                 var vfxComponents = Resources.FindObjectsOfTypeAll<VisualEffect>();
 #if UNITY_EDITOR
-                Debug.unityLogger.logEnabled = false;
                 var vfxAssets = vfxComponents.Select(o => o.visualEffectAsset).Where(o => o != null).Distinct();
                 foreach (var vfx in vfxAssets)
                 {
@@ -86,7 +87,6 @@ namespace UnityEngine.VFX.Test
                     var graph = fnGetOrCreate.Invoke(null, new object[] { resource }) as VFXGraph;
                     graph.RecompileIfNeeded();
                 }
-                Debug.unityLogger.logEnabled = true; //During import process, we can have compile error resolve automatically with recompile
 #endif
 
                 var rt = RenderTexture.GetTemporary(captureSize, captureSize, 24);
@@ -151,6 +151,7 @@ namespace UnityEngine.VFX.Test
 #if UNITY_EDITOR
             UnityEditor.TestTools.Graphics.ResultsUtility.ExtractImagesFromTestProperties(TestContext.CurrentContext.Test);
 #endif
+            Debug.unityLogger.logEnabled = true;
         }
     }
 }

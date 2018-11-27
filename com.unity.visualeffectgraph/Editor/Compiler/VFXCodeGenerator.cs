@@ -484,7 +484,7 @@ namespace UnityEditor.VFX
                 var spaceable = context.GetData() as ISpaceable;
                 globalIncludeContent.WriteLineFormat("#define {0} 1", spaceable.space == VFXCoordinateSpace.World ? "VFX_WORLD_SPACE" : "VFX_LOCAL_SPACE");
             }
-            globalIncludeContent.WriteLineFormat("#include \"{0}/VFXSupport.hlsl\"", renderPipePath);
+            globalIncludeContent.WriteLineFormat("#include \"{0}/VFXDefines.hlsl\"", renderPipePath);
 
             var perPassIncludeContent = new VFXShaderWriter();
             perPassIncludeContent.WriteLine("#include \"" + renderPipeCommon + "\"");
