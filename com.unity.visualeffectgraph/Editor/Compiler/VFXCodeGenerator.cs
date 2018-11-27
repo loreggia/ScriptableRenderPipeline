@@ -469,7 +469,6 @@ namespace UnityEditor.VFX
             }
 
             var globalIncludeContent = new VFXShaderWriter();
-            globalIncludeContent.WriteLineFormat("#include \"{0}/VFXSupport.hlsl\"", renderPipePath);
             globalIncludeContent.WriteLine("#define NB_THREADS_PER_GROUP 64");
             foreach (var attribute in context.GetData().GetAttributes().Where(a => (context.contextType == VFXContextType.kInit && context.GetData().IsAttributeStored(a.attrib)) || (context.GetData().IsAttributeUsed(a.attrib, context))))
                 globalIncludeContent.WriteLineFormat("#define VFX_USE_{0}_{1} 1", attribute.attrib.name.ToUpper(), "CURRENT");
@@ -487,6 +486,7 @@ namespace UnityEditor.VFX
                 var spaceable = context.GetData() as ISpaceable;
                 globalIncludeContent.WriteLineFormat("#define {0} 1", spaceable.space == VFXCoordinateSpace.World ? "VFX_WORLD_SPACE" : "VFX_LOCAL_SPACE");
             }
+            globalIncludeContent.WriteLineFormat("#include \"{0}/VFXSupport.hlsl\"", renderPipePath);
 
             var globalDefinesContent = new VFXShaderWriter();
             globalDefinesContent.WriteLine("#include \"" + renderPipeDefines + "\"");
