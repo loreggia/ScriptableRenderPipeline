@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed stacklit transmission and sun highlight
 - Fixed decals with stereo rendering
 - Fixed flip logic for postprocessing + VR
+- Fixed Metal specific issues with decals, hitting a sampler limit and compiling AxF shader
 
 ### Changed
 - ColorPyramid compute shader passes is swapped to pixel shader passes on platforms where the later is faster (Nintendo Switch).
