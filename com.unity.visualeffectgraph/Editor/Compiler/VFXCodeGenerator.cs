@@ -459,13 +459,11 @@ namespace UnityEditor.VFX
             var renderPipePath = UnityEngine.Experimental.VFX.VFXManager.renderPipeSettingsPath;
             string renderPipeCommon = "Packages/com.unity.visualeffectgraph/Shaders/Common/VFXCommonCompute.cginc";
             string renderPipePasses = null;
-            string renderPipeDefines = null;
 
             if (!context.codeGeneratorCompute && !string.IsNullOrEmpty(renderPipePath))
             {
                 renderPipeCommon = renderPipePath + "/VFXCommon.cginc";
                 renderPipePasses = renderPipePath + "/VFXPasses.template";
-                renderPipeDefines = renderPipePath + "/VFXGlobalDefines.cginc";
             }
 
             var globalIncludeContent = new VFXShaderWriter();
@@ -488,9 +486,6 @@ namespace UnityEditor.VFX
             }
             globalIncludeContent.WriteLineFormat("#include \"{0}/VFXSupport.hlsl\"", renderPipePath);
 
-            var globalDefinesContent = new VFXShaderWriter();
-            globalDefinesContent.WriteLine("#include \"" + renderPipeDefines + "\"");
-
             var perPassIncludeContent = new VFXShaderWriter();
             perPassIncludeContent.WriteLine("#include \"" + renderPipeCommon + "\"");
             perPassIncludeContent.WriteLine("#include \"Packages/com.unity.visualeffectgraph/Shaders/VFXCommon.cginc\"");
@@ -505,7 +500,6 @@ namespace UnityEditor.VFX
 
             ReplaceMultiline(stringBuilder, "${VFXGlobalInclude}", globalIncludeContent.builder);
             ReplaceMultiline(stringBuilder, "${VFXGlobalDeclaration}", globalDeclaration.builder);
-            ReplaceMultiline(stringBuilder, "${VFXGlobalDefines}", globalDefinesContent.builder);
             ReplaceMultiline(stringBuilder, "${VFXPerPassInclude}", perPassIncludeContent.builder);
             ReplaceMultiline(stringBuilder, "${VFXGeneratedBlockFunction}", blockFunction.builder);
             ReplaceMultiline(stringBuilder, "${VFXProcessBlocks}", blockCallFunction.builder);
