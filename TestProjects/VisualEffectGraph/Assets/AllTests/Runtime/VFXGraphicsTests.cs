@@ -71,6 +71,7 @@ namespace UnityEngine.VFX.Test
             {
                 var vfxComponents = Resources.FindObjectsOfTypeAll<VisualEffect>();
 #if UNITY_EDITOR
+                Debug.unityLogger.logEnabled = false;
                 var vfxAssets = vfxComponents.Select(o => o.visualEffectAsset).Where(o => o != null).Distinct();
                 foreach (var vfx in vfxAssets)
                 {
@@ -85,6 +86,7 @@ namespace UnityEngine.VFX.Test
                     var graph = fnGetOrCreate.Invoke(null, new object[] { resource }) as VFXGraph;
                     graph.RecompileIfNeeded();
                 }
+                Debug.unityLogger.logEnabled = true; //During import process, we can have compile error resolve automatically with recompile
 #endif
 
                 var rt = RenderTexture.GetTemporary(captureSize, captureSize, 24);
