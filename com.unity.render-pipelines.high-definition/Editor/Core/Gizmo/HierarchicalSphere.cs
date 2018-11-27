@@ -71,11 +71,15 @@ namespace UnityEditor.Experimental.Rendering
         static Mesh k_MeshSphere_Cache;
         static Mesh k_MeshSphere => k_MeshSphere_Cache == null || k_MeshSphere_Cache.Equals(null) ? (k_MeshSphere_Cache = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx")) : k_MeshSphere_Cache;
 
-        readonly Material m_Material;
+        Material m_Material;
         readonly HierarchicalSphere m_Parent;
         Color m_HandleColor;
         Color m_WireframeColor;
         Color m_WireframeColorBehind;
+
+        Material material => m_Material == null || m_Material.Equals(null)
+            ? (m_Material = new Material(k_Material))
+            : m_Material;
 
         /// <summary>The position of the center of the box in Handle.matrix space.</summary>
         public Vector3 center { get; set; }
@@ -86,11 +90,11 @@ namespace UnityEditor.Experimental.Rendering
         /// <summary>The baseColor used to fill hull. All other colors are deduced from it.</summary>
         public Color baseColor
         {
-            get { return m_Material.color; }
+            get { return material.color; }
             set
             {
                 value.a = 8f / 255;
-                m_Material.color = value;
+                material.color = value;
                 value.a = 1f;
                 m_HandleColor = value;
                 value.a = 0.7f;
@@ -119,7 +123,7 @@ namespace UnityEditor.Experimental.Rendering
             {
                 if (filled)
                 {
-                    m_Material.SetPass(0);
+                    material.SetPass(0);
                     Matrix4x4 drawMatrix = Matrix4x4.TRS((Vector3)Handles.matrix.GetColumn(3), Quaternion.identity, Vector3.one * radius * 2f);
                     Graphics.DrawMeshNow(k_MeshSphere, drawMatrix);
                 }
