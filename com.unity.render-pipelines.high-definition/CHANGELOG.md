@@ -166,8 +166,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [4.0.0-preview] - 2018-09-28
 
 ### Added
-- Added controls for linear fade at the boundary of density volumes
-- Added new API to control decals without monobehaviour object
 - Added a new TerrainLit shader that supports rendering of Unity terrains.
 - Added controls for linear fade at the boundary of density volumes
 - Added new API to control decals without monobehaviour object
