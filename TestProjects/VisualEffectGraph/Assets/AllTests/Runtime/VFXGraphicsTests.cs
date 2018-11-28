@@ -37,8 +37,6 @@ namespace UnityEngine.VFX.Test
             Time.captureFramerate = captureFrameRate;
             UnityEngine.Experimental.VFX.VFXManager.fixedTimeStep = frequency;
             UnityEngine.Experimental.VFX.VFXManager.maxDeltaTime = frequency;
-
-            Debug.unityLogger.logEnabled = false; //Temporary : a compilation error is expected since we didn't update all vfx after include change
         }
 
         static readonly string[] ExcludedTestsButKeepLoadScene =
@@ -151,7 +149,6 @@ namespace UnityEngine.VFX.Test
 #if UNITY_EDITOR
             UnityEditor.TestTools.Graphics.ResultsUtility.ExtractImagesFromTestProperties(TestContext.CurrentContext.Test);
 #endif
-            Debug.unityLogger.logEnabled = true;
         }
     }
 }
