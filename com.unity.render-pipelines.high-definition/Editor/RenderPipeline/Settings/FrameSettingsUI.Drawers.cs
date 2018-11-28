@@ -92,9 +92,25 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 CED.space);
         }
 
+        internal static HDRenderPipelineAsset GetHDRPAssetFor(Editor owner)
+        {
+            HDRenderPipelineAsset hdrpAsset;
+            if (owner is HDRenderPipelineEditor)
+            {
+                //When drawing the inspector of a selected HDRPAsset in Project windows, access HDRP by owner drawing itself
+                hdrpAsset = (owner as HDRenderPipelineEditor).target as HDRenderPipelineAsset;
+            }
+            else
+            {
+                //Else rely on GraphicsSettings are you should be in hdrp and owner could be probe or camera.
+                hdrpAsset = GraphicsSettings.renderPipelineAsset as HDRenderPipelineAsset;
+            }
+            return hdrpAsset;
+        }
+
         internal static FrameSettings GetDefaultFrameSettingsFor(Editor owner)
         {
-            HDRenderPipelineAsset hdrpAsset = GraphicsSettings.renderPipelineAsset as HDRenderPipelineAsset;
+            HDRenderPipelineAsset hdrpAsset = GetHDRPAssetFor(owner);
             if (owner is IHDProbeEditor)
             {
                 if ((owner as IHDProbeEditor).GetTarget(owner.target).mode == ProbeSettings.Mode.Realtime)
@@ -111,7 +127,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         static void Drawer_SectionRenderingPasses(FrameSettingsUI s, SerializedFrameSettings p, Editor owner, bool withOverride)
         {
-            RenderPipelineSettings hdrpSettings = (GraphicsSettings.renderPipelineAsset as HDRenderPipelineAsset).renderPipelineSettings;
+            RenderPipelineSettings hdrpSettings = GetHDRPAssetFor(owner).renderPipelineSettings;
             FrameSettings defaultFrameSettings = GetDefaultFrameSettingsFor(owner);
             OverridableSettingsArea area = new OverridableSettingsArea(8);
             area.Add(p.enableTransparentPrepass, transparentPrepassContent, () => p.overridesTransparentPrepass, a => p.overridesTransparentPrepass = a, defaultValue: defaultFrameSettings.enableTransparentPrepass);
@@ -127,7 +143,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         static void Drawer_SectionRenderingSettings(FrameSettingsUI s, SerializedFrameSettings p, Editor owner, bool withOverride)
         {
-            RenderPipelineSettings hdrpSettings = (GraphicsSettings.renderPipelineAsset as HDRenderPipelineAsset).renderPipelineSettings;
+            RenderPipelineSettings hdrpSettings = GetHDRPAssetFor(owner).renderPipelineSettings;
             FrameSettings defaultFrameSettings = GetDefaultFrameSettingsFor(owner);
             OverridableSettingsArea area = new OverridableSettingsArea(6);
             LitShaderMode defaultShaderLitMode;
@@ -181,7 +197,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         static void Drawer_SectionLightingSettings(FrameSettingsUI s, SerializedFrameSettings p, Editor owner, bool withOverride)
         {
-            RenderPipelineSettings hdrpSettings = (GraphicsSettings.renderPipelineAsset as HDRenderPipelineAsset).renderPipelineSettings;
+            RenderPipelineSettings hdrpSettings = GetHDRPAssetFor(owner).renderPipelineSettings;
             FrameSettings defaultFrameSettings = GetDefaultFrameSettingsFor(owner);
             OverridableSettingsArea area = new OverridableSettingsArea(10);
             area.Add(p.enableShadow, shadowContent, () => p.overridesShadow, a => p.overridesShadow = a, defaultValue: defaultFrameSettings.enableShadow);
