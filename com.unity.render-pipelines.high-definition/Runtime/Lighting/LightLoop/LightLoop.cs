@@ -76,6 +76,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         public static int s_TileSizeFptl = 16;
         public static int s_TileSizeClustered = 32;
+        public static int s_TileSizeBigTile = 64;
 
         // feature variants
         public static int s_NumFeatureVariants = 27;
@@ -368,6 +369,25 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         int m_DebugSelectedLightShadowIndex;
         int m_DebugSelectedLightShadowCount;
 
+        public ComputeBuffer GetBigTileLightList()
+        {
+            return s_BigTileLightList;
+        }
+        public int GetNumTileBigTileX(HDCamera hdCamera)
+        {
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.x, LightDefinitions.s_TileSizeBigTile);
+        }
+
+        public int GetNumTileBigTileY(HDCamera hdCamera)
+        {
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.y, LightDefinitions.s_TileSizeBigTile);
+        }
+
+        public int GetNumTileFtplX(HDCamera hdCamera)
+        {
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.x, LightDefinitions.s_TileSizeFptl);
+        }
+
         void InitShadowSystem(HDRenderPipelineAsset hdAsset)
         {
             m_ShadowInitParameters = hdAsset.GetRenderPipelineSettings().hdShadowInitParams;
@@ -386,24 +406,19 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_ShadowManager = null;
         }
 
-        int GetNumTileFtplX(HDCamera hdCamera)
-        {
-            return ((int)hdCamera.screenSize.x + (LightDefinitions.s_TileSizeFptl - 1)) / LightDefinitions.s_TileSizeFptl;
-        }
-
         int GetNumTileFtplY(HDCamera hdCamera)
         {
-            return ((int)hdCamera.screenSize.y + (LightDefinitions.s_TileSizeFptl - 1)) / LightDefinitions.s_TileSizeFptl;
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.y, LightDefinitions.s_TileSizeFptl);
         }
 
         int GetNumTileClusteredX(HDCamera hdCamera)
         {
-            return ((int)hdCamera.screenSize.x + (LightDefinitions.s_TileSizeClustered - 1)) / LightDefinitions.s_TileSizeClustered;
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.x, LightDefinitions.s_TileSizeClustered);
         }
 
         int GetNumTileClusteredY(HDCamera hdCamera)
         {
-            return ((int)hdCamera.screenSize.y + (LightDefinitions.s_TileSizeClustered - 1)) / LightDefinitions.s_TileSizeClustered;
+            return HDUtils.DivRoundUp((int)hdCamera.screenSize.y, LightDefinitions.s_TileSizeClustered);
         }
 
         public bool GetFeatureVariantsEnabled()
@@ -564,14 +579,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // Setup shadow algorithms
             var shadowParams = hdAsset.renderPipelineSettings.hdShadowInitParams;
-            var punctualShadowKeywords = new[]{"PUNCTUAL_SHADOW_LOW", "PUNCTUAL_SHADOW_MEDIUM", "PUNCTUAL_SHADOW_HIGH"};
-            var directionalShadowKeywords = new[]{"DIRECTIONAL_SHADOW_LOW", "DIRECTIONAL_SHADOW_MEDIUM", "DIRECTIONAL_SHADOW_HIGH"};
-            foreach (var p in punctualShadowKeywords)
+            var shadowKeywords = new[]{"SHADOW_LOW", "SHADOW_MEDIUM", "SHADOW_HIGH"};
+            foreach (var p in shadowKeywords)
                 Shader.DisableKeyword(p);
-            foreach (var p in directionalShadowKeywords)
-                Shader.DisableKeyword(p);
-            Shader.EnableKeyword(punctualShadowKeywords[(int)shadowParams.punctualShadowQuality]);
-            Shader.EnableKeyword(directionalShadowKeywords[(int)shadowParams.directionalShadowQuality]);
+            Shader.EnableKeyword(shadowKeywords[(int)shadowParams.shadowQuality]);
 
             InitShadowSystem(hdAsset);
 
@@ -790,13 +801,14 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 return false;
 
             // Ratio of the size of the light on screen and its intensity, gives a value used to compare light importance
-            float lightDominanceValue = light.screenRect.size.magnitude * lightComponent.intensity;
+            float lightDominanceValue = light.screenRect.size.magnitude * lightComponent.intensity;;
 
-            if (additionalShadowData == null || !additionalShadowData.contactShadows || lightComponent.shadows == LightShadows.None)
+            if (additionalShadowData == null || !additionalShadowData.contactShadows)
                 return false;
             if (lightDominanceValue <= m_DominantLightValue || m_DominantLightValue == Single.PositiveInfinity)
                 return false;
 
+            // Directional lights are always considered first.
             if (light.lightType == LightType.Directional)
                 m_DominantLightValue = Single.PositiveInfinity;
             else
@@ -907,7 +919,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             lightData.contactShadowIndex = -1;
 
-            // The first shadow casting directional light with contact shadow enabled is always taken as dominant light
+            // The first directional light with contact shadow enabled is always taken as dominant light
             if (GetDominantLightWithShadows(additionalShadowData, light, lightComponent))
                 lightData.contactShadowIndex = 0;
 
@@ -1620,6 +1632,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 m_DominantLightValue = 0;
                 m_DebugSelectedLightShadowIndex = -1;
 
+                int decalDatasCount = Math.Min(DecalSystem.m_DecalDatasCount, m_MaxDecalsOnScreen);
+
                 var stereoEnabled = hdCamera.camera.stereoEnabled;
 
                 var hdShadowSettings = VolumeManager.instance.stack.GetComponent<HDShadowSettings>();
@@ -1976,7 +1990,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     }
                 }
 
-                int decalDatasCount = Math.Min(DecalSystem.m_DecalDatasCount, m_MaxDecalsOnScreen);
                 if (decalDatasCount > 0)
                 {
                     for (int i = 0; i < decalDatasCount; i++)
@@ -1984,7 +1997,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                         m_lightList.bounds.Add(DecalSystem.m_Bounds[i]);
                         m_lightList.lightVolumes.Add(DecalSystem.m_LightVolumes[i]);
                     }
-                    m_lightCount += decalDatasCount;
                 }
 
                 // Inject density volumes into the clustered data structure for efficient look up.
@@ -2005,7 +2017,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     AddBoxVolumeDataAndBound(densityVolumes.bounds[i], LightCategory.DensityVolume, featureFlags, worldToViewCR);
                 }
 
-                m_lightCount = m_lightList.lights.Count + m_lightList.envLights.Count + m_densityVolumeCount + decalDatasCount;
+                m_lightCount = m_lightList.lights.Count + m_lightList.envLights.Count + decalDatasCount + m_densityVolumeCount;
                 Debug.Assert(m_lightCount == m_lightList.bounds.Count);
                 Debug.Assert(m_lightCount == m_lightList.lightVolumes.Count);
 
@@ -2022,6 +2034,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
 
                 UpdateDataBuffers();
+
+                cmd.SetGlobalInt(HDShaderIDs._EnvLightIndexShift, m_lightList.lights.Count);
+                cmd.SetGlobalInt(HDShaderIDs._DecalIndexShift, m_lightList.lights.Count + m_lightList.envLights.Count);
+                cmd.SetGlobalInt(HDShaderIDs._DensityVolumeIndexShift, m_lightList.lights.Count + m_lightList.envLights.Count + decalDatasCount);
             }
 
             m_enableBakeShadowMask = m_enableBakeShadowMask && hdCamera.frameSettings.enableShadowMask;
@@ -2073,13 +2089,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             cmd.SetComputeBufferParam(buildPerVoxelLightListShader, s_ClearVoxelAtomicKernel, HDShaderIDs.g_LayeredSingleIdxBuffer, s_GlobalLightListAtomic);
             cmd.DispatchCompute(buildPerVoxelLightListShader, s_ClearVoxelAtomicKernel, 1, 1, 1);
 
-            int decalDatasCount = Math.Min(DecalSystem.m_DecalDatasCount, m_MaxDecalsOnScreen);
-
             bool isOrthographic = camera.orthographic;
             cmd.SetComputeIntParam(buildPerVoxelLightListShader, HDShaderIDs.g_isOrthographic, isOrthographic ? 1 : 0);
-            cmd.SetComputeIntParam(buildPerVoxelLightListShader, HDShaderIDs._EnvLightIndexShift, m_lightList.lights.Count);
-            cmd.SetComputeIntParam(buildPerVoxelLightListShader, HDShaderIDs._DecalIndexShift, m_lightList.lights.Count + m_lightList.envLights.Count);
-            cmd.SetComputeIntParam(buildPerVoxelLightListShader, HDShaderIDs._DensityVolumeIndexShift, m_lightList.lights.Count + m_lightList.envLights.Count + decalDatasCount);
             cmd.SetComputeIntParam(buildPerVoxelLightListShader, HDShaderIDs.g_iNrVisibLights, m_lightCount);
             cmd.SetComputeMatrixArrayParam(buildPerVoxelLightListShader, HDShaderIDs.g_mScrProjectionArr, projscrArr);
             cmd.SetComputeMatrixArrayParam(buildPerVoxelLightListShader, HDShaderIDs.g_mInvScrProjectionArr, invProjscrArr);
@@ -2338,46 +2349,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             BuildGPULightListsCommon(hdCamera, cmd, cameraDepthBufferRT, stencilTextureRT, skyEnabled);
             PushGlobalParams(hdCamera, cmd);
         }
-
-#if UNITY_2019_1_OR_NEWER
-        public GraphicsFence BuildGPULightListsAsyncBegin(HDCamera hdCamera, ScriptableRenderContext renderContext, RenderTargetIdentifier cameraDepthBufferRT, RenderTargetIdentifier stencilTextureRT, GraphicsFence startFence, bool skyEnabled)
-#else
-        public GPUFence BuildGPULightListsAsyncBegin(HDCamera hdCamera, ScriptableRenderContext renderContext, RenderTargetIdentifier cameraDepthBufferRT, RenderTargetIdentifier stencilTextureRT, GPUFence startFence, bool skyEnabled)
-#endif
-        {
-            var cmd = CommandBufferPool.Get("Build light list");
-#if UNITY_2019_1_OR_NEWER
-            cmd.WaitOnAsyncGraphicsFence(startFence);
-#else
-            cmd.WaitOnGPUFence(startFence);
-#endif
-
-            BuildGPULightListsCommon(hdCamera, cmd, cameraDepthBufferRT, stencilTextureRT, skyEnabled);
-#if UNITY_2019_1_OR_NEWER
-            GraphicsFence completeFence = cmd.CreateAsyncGraphicsFence();
-#else
-            GPUFence completeFence = cmd.CreateGPUFence();
-#endif
-            renderContext.ExecuteCommandBufferAsync(cmd, ComputeQueueType.Background);
-            CommandBufferPool.Release(cmd);
-
-            return completeFence;
-        }
-
-#if UNITY_2019_1_OR_NEWER
-        public void BuildGPULightListAsyncEnd(HDCamera hdCamera, CommandBuffer cmd, GraphicsFence doneFence)
-#else
-        public void BuildGPULightListAsyncEnd(HDCamera hdCamera, CommandBuffer cmd, GPUFence doneFence)
-#endif
-        {
-#if UNITY_2019_1_OR_NEWER
-            cmd.WaitOnAsyncGraphicsFence(doneFence);
-#else
-            cmd.WaitOnGPUFence(doneFence);
-#endif
-            PushGlobalParams(hdCamera, cmd);
-        }
-
         void UpdateDataBuffers()
         {
             m_DirectionalLightDatas.SetData(m_lightList.directionalLights);
@@ -2401,7 +2372,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             return add;
         }
 
-        void PushGlobalParams(HDCamera hdCamera, CommandBuffer cmd)
+        public void PushGlobalParams(HDCamera hdCamera, CommandBuffer cmd)
         {
             using (new ProfilingSample(cmd, "Push Global Parameters", CustomSamplerId.TPPushGlobalParameters.GetSampler()))
             {
@@ -2428,11 +2399,16 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 cmd.SetGlobalBuffer(HDShaderIDs._DecalDatas, m_DecalDatas);
                 cmd.SetGlobalInt(HDShaderIDs._DecalCount, DecalSystem.m_DecalDatasCount);
 
+                cmd.SetGlobalInt(HDShaderIDs._NumTileBigTileX, GetNumTileBigTileX(hdCamera));
+                cmd.SetGlobalInt(HDShaderIDs._NumTileBigTileY, GetNumTileBigTileY(hdCamera));
+
                 cmd.SetGlobalInt(HDShaderIDs._NumTileFtplX, GetNumTileFtplX(hdCamera));
                 cmd.SetGlobalInt(HDShaderIDs._NumTileFtplY, GetNumTileFtplY(hdCamera));
 
                 cmd.SetGlobalInt(HDShaderIDs._NumTileClusteredX, GetNumTileClusteredX(hdCamera));
                 cmd.SetGlobalInt(HDShaderIDs._NumTileClusteredY, GetNumTileClusteredY(hdCamera));
+
+                cmd.SetGlobalInt(HDShaderIDs._EnableSSRefraction, hdCamera.frameSettings.enableRoughRefraction ? 1 : 0);
 
                 if (m_FrameSettings.lightLoopSettings.enableBigTilePrepass)
                     cmd.SetGlobalBuffer(HDShaderIDs.g_vBigTileLightList, s_BigTileLightList);
@@ -2456,6 +2432,20 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     // Set up clustered lighting for volumetrics.
                     cmd.SetGlobalBuffer(HDShaderIDs.g_vLightListGlobal, s_PerVoxelLightLists);
                 }
+
+                // Push global params
+                AdditionalShadowData sunShadowData = m_CurrentSunLight != null ? m_CurrentSunLight.GetComponent<AdditionalShadowData>() : null;
+                bool sunLightShadow = sunShadowData != null && m_CurrentShadowSortedSunLightIndex >= 0;
+                if (sunLightShadow)
+                {
+                    cmd.SetGlobalInt(HDShaderIDs._DirectionalShadowIndex, m_CurrentShadowSortedSunLightIndex);
+                }
+                else
+                {
+                    cmd.SetGlobalInt(HDShaderIDs._DirectionalShadowIndex, -1);
+                }
+
+
             }
         }
 
@@ -2470,24 +2460,25 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             public bool outputSplitLighting;
         }
 
-        public void RenderScreenSpaceShadows(HDCamera hdCamera, RTHandleSystem.RTHandle deferredShadowRT, RenderTargetIdentifier depthTexture, int firstMipOffsetY, CommandBuffer cmd)
+        public void SetScreenSpaceShadowsTexture(HDCamera hdCamera, RTHandleSystem.RTHandle deferredShadowRT, CommandBuffer cmd)
         {
             AdditionalShadowData sunShadowData = m_CurrentSunLight != null ? m_CurrentSunLight.GetComponent<AdditionalShadowData>() : null;
-            bool sunLightShadow =  sunShadowData != null && m_CurrentShadowSortedSunLightIndex >= 0;
-            if (sunLightShadow)
-            {
-                cmd.SetGlobalInt(HDShaderIDs._DirectionalShadowIndex, m_CurrentShadowSortedSunLightIndex);
-            }
-            else
-            {
-                cmd.SetGlobalInt(HDShaderIDs._DirectionalShadowIndex, -1);
-            }
-
-            // if there is no need to compute contact shadows, we just quit
             bool needsContactShadows = (m_CurrentSunLight != null && sunShadowData != null && sunShadowData.contactShadows) || m_DominantLightIndex != -1;
             if (!m_EnableContactShadow || !needsContactShadows)
             {
                 cmd.SetGlobalTexture(HDShaderIDs._DeferredShadowTexture, RuntimeUtilities.blackTexture);
+                return;
+            }
+            cmd.SetGlobalTexture(HDShaderIDs._DeferredShadowTexture, deferredShadowRT);
+        }
+
+        public void RenderScreenSpaceShadows(HDCamera hdCamera, RTHandleSystem.RTHandle deferredShadowRT, RenderTargetIdentifier depthTexture, int firstMipOffsetY, CommandBuffer cmd)
+        {
+            AdditionalShadowData sunShadowData = m_CurrentSunLight != null ? m_CurrentSunLight.GetComponent<AdditionalShadowData>() : null;
+            // if there is no need to compute contact shadows, we just quit
+            bool needsContactShadows = (m_CurrentSunLight != null && sunShadowData != null && sunShadowData.contactShadows) || m_DominantLightIndex != -1;
+            if (!m_EnableContactShadow || !needsContactShadows)
+            {
                 return;
             }
 
@@ -2520,11 +2511,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 float contactShadowFadeEnd = m_ContactShadows.maxDistance;
                 float contactShadowOneOverFadeRange = 1.0f / Math.Max(1e-6f, contactShadowRange);
                 Vector4 contactShadowParams = new Vector4(m_ContactShadows.length, m_ContactShadows.distanceScaleFactor, contactShadowFadeEnd, contactShadowOneOverFadeRange);
-                var postProcessLayer = hdCamera.camera.GetComponent<PostProcessLayer>();
-                bool taaEnabled = hdCamera.camera.cameraType == CameraType.Game &&
-                                  HDUtils.IsTemporalAntialiasingActive(postProcessLayer);
-                float timeVaryingNoise = taaEnabled ? 1.0f : 0.0f;
-                Vector4 contactShadowParams2 = new Vector4(m_ContactShadows.opacity, timeVaryingNoise, firstMipOffsetY, 0.0f);
+                Vector4 contactShadowParams2 = new Vector4(m_ContactShadows.opacity, firstMipOffsetY, 0.0f, 0.0f);
                 cmd.SetComputeVectorParam(screenSpaceShadowComputeShader, HDShaderIDs._ContactShadowParamsParameters, contactShadowParams);
                 cmd.SetComputeVectorParam(screenSpaceShadowComputeShader, HDShaderIDs._ContactShadowParamsParameters2, contactShadowParams2);
                 cmd.SetComputeIntParam(screenSpaceShadowComputeShader, HDShaderIDs._DirectionalContactShadowSampleCount, m_ContactShadows.sampleCount);
@@ -2545,8 +2532,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     cmd.SetGlobalInt(HDShaderIDs._ComputeEyeIndex, (int)eye);
                     cmd.DispatchCompute(screenSpaceShadowComputeShader, kernel, numTilesX, numTilesY, 1);
                 }
-
-                cmd.SetGlobalTexture(HDShaderIDs._DeferredShadowTexture, deferredShadowRT);
             }
         }
 

@@ -3,9 +3,9 @@ using System;
 using UnityEditor;
 using UnityEditor.ProjectWindowCallback;
 #endif
-using UnityEngine.Rendering;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.Rendering.LightweightPipeline
+namespace UnityEngine.Rendering.LWRP
 {
     public enum ShadowCascadesOption
     {
@@ -107,6 +107,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         [SerializeField] bool m_SoftShadowsSupported = false;
 
         // Advanced settings
+        [SerializeField] bool m_UseSRPBatcher = false;
         [SerializeField] bool m_SupportsDynamicBatching = true;
         [SerializeField] bool m_MixedLightingSupported = true;
         // TODO: Render Pipeline Batcher
@@ -120,6 +121,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         [SerializeField] LightweightRenderPipelineResources m_ResourcesAsset = null;
         [SerializeField] ShaderVariantLogLevel m_ShaderVariantLogLevel = ShaderVariantLogLevel.Disabled;
+
 #if UNITY_EDITOR
         [NonSerialized]
         LightweightRenderPipelineEditorResources m_EditorResourcesAsset;
@@ -127,15 +129,20 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         static readonly string s_SearchPathProject = "Assets";
         static readonly string s_SearchPathPackage = "Packages/com.unity.render-pipelines.lightweight";
 
+        public static LightweightRenderPipelineAsset Create()
+        {
+            var instance = CreateInstance<LightweightRenderPipelineAsset>();
+            instance.m_EditorResourcesAsset = LoadResourceFile<LightweightRenderPipelineEditorResources>();
+            instance.m_ResourcesAsset = LoadResourceFile<LightweightRenderPipelineResources>();
+            return instance;
+        }
+ 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812")]
         internal class CreateLightweightPipelineAsset : EndNameEditAction
         {
             public override void Action(int instanceId, string pathName, string resourceFile)
             {
-                var instance = CreateInstance<LightweightRenderPipelineAsset>();
-                instance.m_EditorResourcesAsset = LoadResourceFile<LightweightRenderPipelineEditorResources>();
-                instance.m_ResourcesAsset = LoadResourceFile<LightweightRenderPipelineResources>();
-                AssetDatabase.CreateAsset(instance, pathName);
+                AssetDatabase.CreateAsset(Create(), pathName);
             }
         }
 
@@ -237,21 +244,25 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public bool supportsCameraDepthTexture
         {
             get { return m_RequireDepthTexture; }
+            set { m_RequireDepthTexture = value; }
         }
 
         public bool supportsCameraOpaqueTexture
         {
             get { return m_RequireOpaqueTexture; }
+            set { m_RequireOpaqueTexture = value; }
         }
 
         public Downsampling opaqueDownsampling
         {
             get { return m_OpaqueDownsampling; }
+            set { m_OpaqueDownsampling = value; }
         }
 
         public bool supportsHDR
         {
             get { return m_SupportsHDR; }
+            set { m_SupportsHDR = value; }
         }
 
         public int msaaSampleCount
@@ -263,7 +274,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public float renderScale
         {
             get { return m_RenderScale; }
-            set { m_RenderScale = value; }
+            set { m_RenderScale = ValidateRenderScale(value); }
         }
 
         public LightRenderingMode mainLightRenderingMode
@@ -289,6 +300,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public int maxAdditionalLightsCount
         {
             get { return m_AdditionalLightsPerObjectLimit; }
+            set { m_AdditionalLightsPerObjectLimit = ValidatePerObjectLights(value); }
         }
 
         public bool supportsAdditionalLightShadows
@@ -304,23 +316,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public float shadowDistance
         {
             get { return m_ShadowDistance; }
-            set { m_ShadowDistance = value; }
+            set { m_ShadowDistance = Mathf.Max(0.0f, value); }
         }
 
-        public int cascadeCount
+        public ShadowCascadesOption shadowCascadeOption
         {
-            get
-            {
-                switch (m_ShadowCascades)
-                {
-                    case ShadowCascadesOption.TwoCascades:
-                        return 2;
-                    case ShadowCascadesOption.FourCascades:
-                        return 4;
-                    default:
-                        return 1;
-                }
-            }
+            get { return m_ShadowCascades; }
+            set { m_ShadowCascades = value; }
         }
 
         public float cascade2Split
@@ -336,13 +338,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public float shadowDepthBias
         {
             get { return m_ShadowDepthBias; }
-            set { m_ShadowDepthBias = value; }
+            set { m_ShadowDepthBias = ValidateShadowBias(value); }
         }
 
         public float shadowNormalBias
         {
             get { return m_ShadowNormalBias; }
-            set { m_ShadowNormalBias = value; }
+            set { m_ShadowNormalBias = ValidateShadowBias(value); }
         }
 
         public bool supportsSoftShadows
@@ -353,6 +355,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public bool supportsDynamicBatching
         {
             get { return m_SupportsDynamicBatching; }
+            set { m_SupportsDynamicBatching = value; }
         }
 
         public bool supportsMixedLighting
@@ -363,8 +366,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public ShaderVariantLogLevel shaderVariantLogLevel
         {
             get { return m_ShaderVariantLogLevel; }
+            set { m_ShaderVariantLogLevel = value; }
         }
-
+        
+        public bool useSRPBatcher
+        {
+            get { return m_UseSRPBatcher; }
+            set { m_UseSRPBatcher = value; }
+        }
 
         public override Material defaultMaterial
         {
@@ -409,7 +418,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public override Shader defaultShader
         {
             get
-        {
+            {
                 if (m_DefaultShader == null)
                     m_DefaultShader = Shader.Find(ShaderUtils.GetShaderPath(ShaderPathID.PhysicallyBased));
                 return m_DefaultShader;
@@ -452,7 +461,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             get { return resources != null ? resources.samplingShader : null; }
         }
-        
+
+
         public void OnBeforeSerialize()
         {
         }
@@ -473,6 +483,21 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 m_AdditionalLightsPerObjectLimit = m_MaxPixelLights;
                 m_MainLightShadowmapResolution = m_ShadowAtlasResolution;
             }
+        }
+
+        float ValidateShadowBias(float value)
+        {
+            return Mathf.Max(0.0f, Mathf.Min(value, LightweightRenderPipeline.maxShadowBias));
+        }
+
+        int ValidatePerObjectLights(int value)
+        {
+            return System.Math.Max(0, System.Math.Min(value, LightweightRenderPipeline.maxPerObjectLightCount));
+        }
+
+        float ValidateRenderScale(float value)
+        {
+            return Mathf.Max(LightweightRenderPipeline.minRenderScale, Mathf.Min(value, LightweightRenderPipeline.maxRenderScale));
         }
     }
 }

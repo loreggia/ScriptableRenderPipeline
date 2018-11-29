@@ -38,15 +38,19 @@ Shader "Hidden/HDRenderPipeline/OpaqueAtmosphericScattering"
         {
             PositionInputs posInput = GetPositionInput_Stereo(input.positionCS.xy, _ScreenSize.zw, depth, UNITY_MATRIX_I_VP, UNITY_MATRIX_V, unity_StereoEyeIndex);
 
+#if defined(UNITY_SINGLE_PASS_STEREO)
+            // XRTODO: fixup and consolidate stereo code relying on _PixelCoordToViewDirWS
+            V = -normalize(posInput.positionWS);
+#endif
+
             if (depth == UNITY_RAW_FAR_CLIP_VALUE)
             {
                 // When a pixel is at far plane, the world space coordinate reconstruction is not reliable.
                 // So in order to have a valid position (for example for height fog) we just consider that the sky is a sphere centered on camera with a radius of 5km (arbitrarily chosen value!)
                 // And recompute the position on the sphere with the current camera direction.
-                float3 viewDirection = -V * 5000.0f;
-                posInput.positionWS = GetCurrentViewPosition() + viewDirection;
+                posInput.positionWS = GetCurrentViewPosition() - V * _MaxFogDistance;
 
-                // Warning: we do not modify 'posInput.linearDepth'. It may still be imprecise!
+                // Warning: we do not modify depth values. Do not use them!
             }
 
             return EvaluateAtmosphericScattering(posInput, V); // Premultiplied alpha

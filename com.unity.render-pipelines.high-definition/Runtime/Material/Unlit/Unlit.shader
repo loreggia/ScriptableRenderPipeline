@@ -92,8 +92,6 @@ Shader "HDRenderPipeline/Unlit"
     // Define
     //-------------------------------------------------------------------------------------
 
-    #define UNITY_MATERIAL_UNLIT // Need to be define before including Material.hlsl
-
     //-------------------------------------------------------------------------------------
     // Include
     //-------------------------------------------------------------------------------------
@@ -138,6 +136,7 @@ Shader "HDRenderPipeline/Unlit"
             #define SHADERPASS SHADERPASS_DEPTH_ONLY
             #define SCENESELECTIONPASS // This will drive the output of the scene selection shader
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Unlit/Unlit.hlsl"
             #include "ShaderPass/UnlitDepthPass.hlsl"
             #include "UnlitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
@@ -157,9 +156,11 @@ Shader "HDRenderPipeline/Unlit"
             ColorMask 0 // We don't have WRITE_NORMAL_BUFFER for unlit, but as we bind a buffer we shouldn't write into it.
 
             HLSLPROGRAM
+            #pragma multi_compile _ WRITE_MSAA_DEPTH
 
             #define SHADERPASS SHADERPASS_DEPTH_ONLY
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Unlit/Unlit.hlsl"
             #include "ShaderPass/UnlitDepthPass.hlsl"
             #include "UnlitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
@@ -192,6 +193,7 @@ Shader "HDRenderPipeline/Unlit"
             #define SHADERPASS SHADERPASS_VELOCITY
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Unlit/Unlit.hlsl"
             #include "ShaderPass/UnlitSharePass.hlsl"
             #include "UnlitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassVelocity.hlsl"
@@ -219,6 +221,7 @@ Shader "HDRenderPipeline/Unlit"
 
             #define SHADERPASS SHADERPASS_FORWARD_UNLIT
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Unlit/Unlit.hlsl"
             #include "ShaderPass/UnlitSharePass.hlsl"
             #include "UnlitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassForwardUnlit.hlsl"
@@ -243,6 +246,7 @@ Shader "HDRenderPipeline/Unlit"
 
             #define SHADERPASS SHADERPASS_LIGHT_TRANSPORT
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Unlit/Unlit.hlsl"
             #include "ShaderPass/UnlitSharePass.hlsl"
             #include "UnlitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassLightTransport.hlsl"
@@ -265,6 +269,7 @@ Shader "HDRenderPipeline/Unlit"
 
             #define SHADERPASS SHADERPASS_DISTORTION
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+            #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Unlit/Unlit.hlsl"
             #include "ShaderPass/UnlitDistortionPass.hlsl"
             #include "UnlitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDistortion.hlsl"

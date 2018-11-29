@@ -1,19 +1,20 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEditor.Experimental.Rendering.HDPipeline.Drawing;
 using UnityEditor.Graphing;
-using UnityEditor.ShaderGraph.Drawing;
+using UnityEditor.ShaderGraph;
 using UnityEditor.ShaderGraph.Drawing.Controls;
 using UnityEngine;
-using UnityEngine.Experimental.UIElements;
+using UnityEngine.UIElements;
 using UnityEngine.Experimental.Rendering.HDPipeline;
 
-
-namespace UnityEditor.ShaderGraph
+namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
     [Serializable]
-    [Title("Master", "HDLit")]
-    public class HDLitMasterNode : MasterNode<IHDLitSubShader>, IMayRequirePosition, IMayRequireNormal, IMayRequireTangent
+    [Title("Master", "Lit")]
+    [FormerName("UnityEditor.ShaderGraph.HDLitMasterNode")]
+    class HDLitMasterNode : MasterNode<IHDLitSubShader>, IMayRequirePosition, IMayRequireNormal, IMayRequireTangent
     {
         public const string AlbedoSlotName = "Albedo";
         public const string AlbedoDisplaySlotName = "BaseColor";
@@ -94,12 +95,6 @@ namespace UnityEditor.ShaderGraph
             Alpha,
             PremultipliedAlpha,
             Additive,
-        }
-
-        public enum ProjectionModelLit
-        {
-            Proxy = 0,
-            HiZ = 1,
         }
 
         // Just for convenience of doing simple masks. We could run out of bits of course.
@@ -252,9 +247,9 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
-        ScreenSpaceLighting.RefractionModel m_RefractionModel;
+        ScreenSpaceRefraction.RefractionModel m_RefractionModel;
 
-        public ScreenSpaceLighting.RefractionModel refractionModel
+        public ScreenSpaceRefraction.RefractionModel refractionModel
         {
             get { return m_RefractionModel; }
             set
@@ -503,7 +498,7 @@ namespace UnityEditor.ShaderGraph
 
         [SerializeField]
         float m_SpecularAAScreenSpaceVariance;
-    
+
         public float specularAAScreenSpaceVariance
         {
             get { return m_SpecularAAScreenSpaceVariance; }
@@ -576,7 +571,7 @@ namespace UnityEditor.ShaderGraph
 
         public bool HasRefraction()
         {
-            return (surfaceType == SurfaceType.Transparent && !drawBeforeRefraction.isOn && refractionModel != ScreenSpaceLighting.RefractionModel.None);
+            return (surfaceType == SurfaceType.Transparent && !drawBeforeRefraction.isOn && refractionModel != ScreenSpaceRefraction.RefractionModel.None);
         }
 
         public bool HasDistortion()
@@ -587,7 +582,7 @@ namespace UnityEditor.ShaderGraph
         public sealed override void UpdateNodeAfterDeserialization()
         {
             base.UpdateNodeAfterDeserialization();
-            name = "HD Lit Master";
+            name = "Lit Master";
 
             List<int> validSlots = new List<int>();
             if (MaterialTypeUsesSlotMask(SlotMask.Position))
@@ -804,29 +799,6 @@ namespace UnityEditor.ShaderGraph
             });
 
             base.CollectShaderProperties(collector, generationMode);
-        }
-
-        public int GetStencilWriteMask()
-        {
-            int stencilWriteMask = (int)HDRenderPipeline.StencilBitMask.LightingMask;
-            if (!m_ReceivesSSR)
-            {
-                stencilWriteMask |= (int)HDRenderPipeline.StencilBitMask.DoesntReceiveSSR;
-            }
-            return stencilWriteMask;
-        }
-        public int GetStencilRef()
-        {
-            int stencilRef = (int)StencilLightingUsage.RegularLighting;
-            if (RequiresSplitLighting())
-            {
-                stencilRef = (int)StencilLightingUsage.SplitLighting;
-            }
-            if (!m_ReceivesSSR)
-            {
-                stencilRef |= (int)HDRenderPipeline.StencilBitMask.DoesntReceiveSSR;
-            }
-            return stencilRef;
         }
     }
 }
