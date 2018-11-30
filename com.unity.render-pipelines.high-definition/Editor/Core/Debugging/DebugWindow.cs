@@ -29,6 +29,12 @@ namespace UnityEditor.Experimental.Rendering
 
     public sealed class DebugWindow : EditorWindow
     {
+        static readonly GUIContent k_ResetButtonContent = new GUIContent("Reset");
+        //static readonly GUIContent k_SaveButtonContent = new GUIContent("Save");
+        //static readonly GUIContent k_LoadButtonContent = new GUIContent("Load");
+
+        //static bool isMultiview = false;
+
         static Styles s_Styles;
         static GUIStyle s_SplitterLeft;
 
@@ -341,6 +347,18 @@ namespace UnityEditor.Experimental.Rendering
             GUI.color = s_Styles.skinBackgroundColor;
             GUI.DrawTexture(wrect, EditorGUIUtility.whiteTexture);
             GUI.color = oldColor;
+
+
+            GUILayout.BeginHorizontal(EditorStyles.toolbar);
+            //isMultiview = GUILayout.Toggle(isMultiview, "multiview", EditorStyles.toolbarButton);
+            //if (isMultiview)
+            //    EditorGUILayout.Popup(0, new[] { new GUIContent("SceneView 1"), new GUIContent("SceneView 2") }, EditorStyles.toolbarDropDown, GUILayout.Width(100f));
+            GUILayout.FlexibleSpace();
+            //GUILayout.Button(k_LoadButtonContent, EditorStyles.toolbarButton);
+            //GUILayout.Button(k_SaveButtonContent, EditorStyles.toolbarButton);
+            if (GUILayout.Button(k_ResetButtonContent, EditorStyles.toolbarButton))
+                DebugManager.instance.Reset();
+            GUILayout.EndHorizontal();
 
             using (new EditorGUILayout.HorizontalScope())
             {

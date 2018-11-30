@@ -29,7 +29,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         MaxRenderingFullScreenDebug
     }
 
-    public class DebugDisplaySettings
+    public class DebugDisplaySettings : IDebugData
     {
         static string k_PanelDisplayStats = "Display Stats";
         static string k_PanelMaterials = "Material";
@@ -104,13 +104,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 .ToArray();
             msaaSamplesDebugValues = (int[])Enum.GetValues(typeof(MSAASamples));
 
-            Reset();
-        }
-
-        public void Reset()
-        {
             data = new DebugData();
         }
+        
+        Action IDebugData.GetReset() => () => data = new DebugData();
         
         public int GetDebugMaterialIndex()
         {
@@ -634,6 +631,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             RegisterMaterialDebug();
             RegisterLightingDebug();
             RegisterRenderingDebug();
+            DebugManager.instance.RegisterData(this);
         }
 
         public void UnregisterDebug()
@@ -643,6 +641,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             UnregisterDebugItems(k_PanelMaterials, m_DebugMaterialItems);
             UnregisterDebugItems(k_PanelLighting, m_DebugLightingItems);
             UnregisterDebugItems(k_PanelRendering, m_DebugRenderingItems);
+            DebugManager.instance.UnregisterData(this);
         }
 
         void UnregisterDebugItems(string panelName, DebugUI.Widget[] items)
@@ -673,23 +672,30 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             return string.Format("({0:F6}, {1:F6}, {2:F6})", v.x, v.y, v.z);
         }
 
-        public static void RegisterCamera(string cameraName)
+        public static void RegisterCamera(Camera camera, HDAdditionalCameraData additionalData)
         {
-            if (cameraNames.FindIndex(x => x.text.Equals(cameraName)) < 0)
+            string name = camera.name;
+            if (cameraNames.FindIndex(x => x.text.Equals(name)) < 0)
             {
-                cameraNames.Add(new GUIContent(cameraName));
+                cameraNames.Add(new GUIContent(name));
                 needsRefreshingCameraFreezeList = true;
             }
+            
+            FrameSettings.RegisterDebug(name, additionalData.GetFrameSettings());
+            DebugManager.instance.RegisterData(additionalData);
         }
 
-        public static void UnRegisterCamera(string cameraName)
+        public static void UnRegisterCamera(Camera camera, HDAdditionalCameraData additionalData)
         {
-            int indexOfCamera = cameraNames.FindIndex(x => x.text.Equals(cameraName));
+            string name = camera.name;
+            int indexOfCamera = cameraNames.FindIndex(x => x.text.Equals(camera.name));
             if (indexOfCamera > 0)
             {
                 cameraNames.RemoveAt(indexOfCamera);
                 needsRefreshingCameraFreezeList = true;
             }
+            FrameSettings.UnRegisterDebug(name);
+            DebugManager.instance.UnregisterData(additionalData);
         }
     }
 }
