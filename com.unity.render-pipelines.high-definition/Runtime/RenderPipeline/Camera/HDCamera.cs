@@ -533,7 +533,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         }
 
         // Stopgap method used to extract stereo combined matrix state.
-        public void UpdateStereoDependentState(ref ScriptableCullingParameters cullingParams)
+        public void UpdateStereoDependentState(in ScriptableCullingParameters cullingParams)
         {
             if (!camera.stereoEnabled)
                 return;
