@@ -148,7 +148,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public LightLoopSettings lightLoopSettings = new LightLoopSettings();
         
         //saved enum fields for when repainting Debug Menu
-        int m_LitShaderModeEnumIndex;
+        int m_LitShaderModeEnumIndex = 1;   //match Deferred index
 
         public FrameSettings() {
         }
@@ -203,7 +203,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             this.lightLoopSettings.CopyTo(frameSettings.lightLoopSettings);
 
-            frameSettings.m_LitShaderModeEnumIndex = this.m_LitShaderModeEnumIndex;
+            frameSettings.Refresh();
         }
 
         public FrameSettings Override(FrameSettings overridedFrameSettings)
@@ -224,10 +224,10 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
             }
 
-            result.lightLoopSettings = lightLoopSettings.Override(overridedFrameSettings.lightLoopSettings);
-
             //propagate override to be chained
             result.overrides = overrides | overridedFrameSettings.overrides;
+
+            result.Refresh();
             return result;
         }
 
@@ -343,7 +343,23 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             LightLoopSettings.InitializeLightLoopSettings(camera, aggregate, renderPipelineSettings, srcFrameSettings, ref aggregate.lightLoopSettings);
 
-            aggregate.m_LitShaderModeEnumIndex = srcFrameSettings.m_LitShaderModeEnumIndex;
+            aggregate.Refresh();
+        }
+
+        void Refresh()
+        {
+            // actually, we need to sync up changes done in the debug menu too
+            switch(shaderLitMode)
+            {
+                case LitShaderMode.Forward:
+                    m_LitShaderModeEnumIndex = 0;
+                    break;
+                case LitShaderMode.Deferred:
+                    m_LitShaderModeEnumIndex = 1;
+                    break;
+                default:
+                    throw new ArgumentException("Unknown LitShaderMode");
+            }
         }
 
         public bool BuildLightListRunsAsync()
