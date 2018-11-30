@@ -26,9 +26,12 @@ namespace UnityEngine.Experimental.Rendering.LWRP
         private PostProcessPass m_PostProcessPass;
         private CreateColorRenderTexturesPass m_createColorPass;
         private FinalBlitPass m_FinalBlitPass;
+        private CapturePass m_CapturePass;
         private EndXRRenderingPass m_EndXrRenderingPass;
 
 #if UNITY_EDITOR
+        private GizmoRenderingPass m_LitGizmoRenderingPass;
+        private GizmoRenderingPass m_UnlitGizmoRenderingPass;
         private SceneViewDepthCopyPass m_SceneViewDepthCopyPass;
 #endif
 
@@ -69,10 +72,13 @@ namespace UnityEngine.Experimental.Rendering.LWRP
             m_RenderTransparentForwardPass = new RenderTransparentForwardPass();
             m_PostProcessPass = new PostProcessPass();
             m_FinalBlitPass = new FinalBlitPass();
+            m_CapturePass = new CapturePass();
             m_EndXrRenderingPass = new EndXRRenderingPass();
 
 #if UNITY_EDITOR
             m_SceneViewDepthCopyPass = new SceneViewDepthCopyPass();
+            m_LitGizmoRenderingPass = new GizmoRenderingPass();
+            m_UnlitGizmoRenderingPass = new GizmoRenderingPass();
 #endif
 
             // RenderTexture format depends on camera and pipeline (HDR, non HDR, etc)
@@ -89,14 +95,16 @@ namespace UnityEngine.Experimental.Rendering.LWRP
 
             m_Initialized = true;
         }
-        
+
         public static bool RequiresIntermediateColorTexture(ref CameraData cameraData, RenderTextureDescriptor baseDescriptor)
         {
             bool isScaledRender = !Mathf.Approximately(cameraData.renderScale, 1.0f);
             bool isTargetTexture2DArray = baseDescriptor.dimension == TextureDimension.Tex2DArray;
             bool noAutoResolveMsaa = cameraData.msaaSamples > 1 && !SystemInfo.supportsMultisampleAutoResolve;
+            bool isCapturing = cameraData.captureActions != null;
             return noAutoResolveMsaa || cameraData.isSceneViewCamera || isScaledRender || cameraData.isHdrEnabled ||
-                cameraData.postProcessEnabled || cameraData.requiresOpaqueTexture || isTargetTexture2DArray || !cameraData.isDefaultViewport;
+                cameraData.postProcessEnabled || cameraData.requiresOpaqueTexture || isTargetTexture2DArray || !cameraData.isDefaultViewport ||
+                isCapturing;
         }
 
         List<IBeforeRender> m_BeforeRenderPasses = new List<IBeforeRender>(10);
@@ -154,7 +162,9 @@ namespace UnityEngine.Experimental.Rendering.LWRP
                     || m_AfterOpaquePostProcessPasses.Count != 0
                     || m_AfterSkyboxPasses.Count != 0
                     || m_AfterTransparentPasses.Count != 0
-                    || m_AfterRenderPasses.Count != 0;
+                    || m_AfterRenderPasses.Count != 0
+                    || Display.main.requiresBlitToBackbuffer
+                    || renderingData.killAlphaInFinalBlit;
 
             RenderTargetHandle colorHandle = RenderTargetHandle.CameraTarget;
             RenderTargetHandle depthHandle = RenderTargetHandle.CameraTarget;
@@ -187,12 +197,12 @@ namespace UnityEngine.Experimental.Rendering.LWRP
             if (renderingData.cameraData.isStereoEnabled)
                 renderer.EnqueuePass(m_BeginXrRenderingPass);
 
-            var rendererConfiguration = ScriptableRenderer.GetRendererConfiguration(renderingData.lightData.additionalLightsCount);
+            var perObjectFlags = ScriptableRenderer.GetPerObjectLightFlags(renderingData.lightData.mainLightIndex, renderingData.lightData.additionalLightsCount);
 
             m_SetupLightweightConstants.Setup(renderer.maxVisibleAdditionalLights, renderer.perObjectLightIndices);
             renderer.EnqueuePass(m_SetupLightweightConstants);
 
-            m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, ScriptableRenderer.GetCameraClearFlag(camera), camera.backgroundColor, rendererConfiguration);
+            m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, ScriptableRenderer.GetCameraClearFlag(camera), camera.backgroundColor, perObjectFlags);
             renderer.EnqueuePass(m_RenderOpaqueForwardPass);
             foreach (var pass in m_AfterOpaquePasses)
                 renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));
@@ -232,11 +242,16 @@ namespace UnityEngine.Experimental.Rendering.LWRP
                 renderer.EnqueuePass(m_CopyColorPass);
             }
 
-            m_RenderTransparentForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, rendererConfiguration);
+            m_RenderTransparentForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, perObjectFlags);
             renderer.EnqueuePass(m_RenderTransparentForwardPass);
 
             foreach (var pass in m_AfterTransparentPasses)
                 renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));
+
+#if UNITY_EDITOR
+            m_LitGizmoRenderingPass.Setup(true);
+            renderer.EnqueuePass(m_LitGizmoRenderingPass);
+#endif
 
             bool afterRenderExists = m_AfterRenderPasses.Count != 0;
 
@@ -263,7 +278,10 @@ namespace UnityEngine.Experimental.Rendering.LWRP
                 //now blit into the final target
                 if (colorHandle != RenderTargetHandle.CameraTarget)
                 {
-                    m_FinalBlitPass.Setup(baseDescriptor, colorHandle);
+                    if (m_CapturePass.Setup(colorHandle, renderingData.cameraData.captureActions))
+                        renderer.EnqueuePass(m_CapturePass);
+
+                    m_FinalBlitPass.Setup(baseDescriptor, colorHandle, Display.main.requiresSrgbBlitToBackbuffer, renderingData.killAlphaInFinalBlit);
                     renderer.EnqueuePass(m_FinalBlitPass);
                 }
             }
@@ -276,17 +294,23 @@ namespace UnityEngine.Experimental.Rendering.LWRP
                 }
                 else if (colorHandle != RenderTargetHandle.CameraTarget)
                 {
-                    m_FinalBlitPass.Setup(baseDescriptor, colorHandle);
+                    if (m_CapturePass.Setup(colorHandle, renderingData.cameraData.captureActions))
+                        renderer.EnqueuePass(m_CapturePass);
+
+                    m_FinalBlitPass.Setup(baseDescriptor, colorHandle, Display.main.requiresSrgbBlitToBackbuffer, renderingData.killAlphaInFinalBlit);
                     renderer.EnqueuePass(m_FinalBlitPass);
                 }
             }
-            
+
             if (renderingData.cameraData.isStereoEnabled)
             {
                 renderer.EnqueuePass(m_EndXrRenderingPass);
             }
 
 #if UNITY_EDITOR
+            m_UnlitGizmoRenderingPass.Setup(false);
+            renderer.EnqueuePass(m_UnlitGizmoRenderingPass);
+
             if (renderingData.cameraData.isSceneViewCamera)
             {
                 m_SceneViewDepthCopyPass.Setup(m_DepthTexture);
