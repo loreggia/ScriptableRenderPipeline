@@ -155,7 +155,7 @@ $include("SharedCode.template.hlsl")
         // using alpha compositing https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch23.html
         if (decalSurfaceData.HTileMask & DBUFFERHTILEBIT_DIFFUSE)
         {
-            surfaceData.diffuseColor.xyz = surfaceData.diffuseColor.xyz * decalSurfaceData.diffuseColor.w + decalSurfaceData.diffuseColor.xyz;
+            surfaceData.diffuseColor.xyz = surfaceData.diffuseColor.xyz * decalSurfaceData.baseColor.w + decalSurfaceData.baseColor.xyz;
         }
 
         if (decalSurfaceData.HTileMask & DBUFFERHTILEBIT_NORMAL)
@@ -174,7 +174,7 @@ $include("SharedCode.template.hlsl")
         }
     }
 
-    void BuildSurfaceData(FragInputs fragInputs, inout SurfaceDescription surfaceDescription, float3 V, out SurfaceData surfaceData, out float3 bentNormalWS)
+    void BuildSurfaceData(FragInputs fragInputs, inout SurfaceDescription surfaceDescription, float3 V, PositionInputs posInput, out SurfaceData surfaceData, out float3 bentNormalWS)
     {
         // setup defaults -- these are used if the graph doesn't output a value
         ZERO_INITIALIZE(SurfaceData, surfaceData);
@@ -295,7 +295,7 @@ $include("SharedCode.template.hlsl")
         $AlphaTestPostpass: DoAlphaTest(surfaceDescription.Alpha, surfaceDescription.AlphaClipThresholdDepthPostpass);
 
         float3 bentNormalWS;
-        BuildSurfaceData(fragInputs, surfaceDescription, V, surfaceData, bentNormalWS);
+        BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData, bentNormalWS);
     
         // Builtin Data
         // For back lighting we use the oposite vertex normal 

@@ -54,7 +54,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             VertexShaderSlots = new List<int>()
             {
-                //FabricMasterNode.PositionSlotId
+                //HairMasterNode.PositionSlotId
             },
             UseInPreview = false
         };
@@ -635,9 +635,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             if (pass.PixelShaderUsesSlot(HairMasterNode.AmbientOcclusionSlotId))
             {
-                var occlusionSlot = masterNode.FindSlot<Vector1MaterialSlot>(HDLitMasterNode.AmbientOcclusionSlotId);
+                var occlusionSlot = masterNode.FindSlot<Vector1MaterialSlot>(HairMasterNode.AmbientOcclusionSlotId);
 
-                bool connected = masterNode.IsSlotConnected(HDLitMasterNode.AmbientOcclusionSlotId);
+                bool connected = masterNode.IsSlotConnected(HairMasterNode.AmbientOcclusionSlotId);
                 if (connected || occlusionSlot.value != occlusionSlot.defaultValue)
                 {
                     activeFields.Add("AmbientOcclusion");
