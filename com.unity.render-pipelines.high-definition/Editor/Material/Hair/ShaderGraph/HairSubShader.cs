@@ -6,13 +6,13 @@ using UnityEngine.Rendering;
 
 namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
-    public class HDHairSubShader : IHDHairSubShader
+    public class HairSubShader : IHairSubShader
     {
         Pass m_PassMETA = new Pass()
         {
             Name = "META",
             LightMode = "Meta",
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_LIGHT_TRANSPORT",
             CullOverride = "Cull Off",
@@ -31,26 +31,26 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.AlbedoSlotId,
-                HDHairMasterNode.NormalSlotId,
-                HDHairMasterNode.SpecularOcclusionSlotId,
-                HDHairMasterNode.BentNormalSlotId,
-                HDHairMasterNode.TangentSlotId,
-                HDHairMasterNode.SubsurfaceMaskSlotId,
-                HDHairMasterNode.ThicknessSlotId,
-                HDHairMasterNode.DiffusionProfileSlotId,
-                HDHairMasterNode.SmoothnessSlotId,
-                HDHairMasterNode.AmbientOcclusionSlotId,
-                HDHairMasterNode.EmissionSlotId,
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdSlotId,
-                HDHairMasterNode.SpecularAAScreenSpaceVarianceSlotId,
-                HDHairMasterNode.SpecularAAThresholdSlotId,
-                HDHairMasterNode.SpecularTintSlotId,
-                HDHairMasterNode.SpecularShiftSlotId,
-                HDHairMasterNode.SecondarySpecularTintSlotId,
-                HDHairMasterNode.SecondarySmoothnessSlotId,
-                HDHairMasterNode.SecondarySpecularShiftSlotId,
+                HairMasterNode.AlbedoSlotId,
+                HairMasterNode.NormalSlotId,
+                HairMasterNode.SpecularOcclusionSlotId,
+                HairMasterNode.BentNormalSlotId,
+                HairMasterNode.TangentSlotId,
+                HairMasterNode.SubsurfaceMaskSlotId,
+                HairMasterNode.ThicknessSlotId,
+                HairMasterNode.DiffusionProfileSlotId,
+                HairMasterNode.SmoothnessSlotId,
+                HairMasterNode.AmbientOcclusionSlotId,
+                HairMasterNode.EmissionSlotId,
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdSlotId,
+                HairMasterNode.SpecularAAScreenSpaceVarianceSlotId,
+                HairMasterNode.SpecularAAThresholdSlotId,
+                HairMasterNode.SpecularTintSlotId,
+                HairMasterNode.SpecularShiftSlotId,
+                HairMasterNode.SecondarySpecularTintSlotId,
+                HairMasterNode.SecondarySmoothnessSlotId,
+                HairMasterNode.SecondarySpecularShiftSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             Name = "SceneSelectionPass",
             LightMode = "SceneSelectionPass",
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_DEPTH_ONLY",
             ExtraDefines = new List<string>()
@@ -77,12 +77,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdSlotId
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                HDHairMasterNode.PositionSlotId
+                HairMasterNode.PositionSlotId
             },
             UseInPreview = true
         };
@@ -91,7 +91,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             Name = "ShadowCaster",
             LightMode = "ShadowCaster",
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_SHADOWS",
             BlendOverride = "Blend One Zero",
@@ -107,12 +107,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdSlotId
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                HDHairMasterNode.PositionSlotId
+                HairMasterNode.PositionSlotId
             },
             
             UseInPreview = false
@@ -122,7 +122,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             Name = "Motion Vectors",
             LightMode = "MotionVectors",
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_VELOCITY",
             ExtraDefines = new List<string>()
@@ -165,12 +165,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdSlotId
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                HDHairMasterNode.PositionSlotId
+                HairMasterNode.PositionSlotId
             },
             UseInPreview = false
         };
@@ -179,7 +179,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             Name = "TransparentDepthPrepass",
             LightMode = "TransparentDepthPrepass",
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_DEPTH_ONLY",
             BlendOverride = "Blend One Zero",
@@ -195,12 +195,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdDepthPrepassSlotId,
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdDepthPrepassSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                HDHairMasterNode.PositionSlotId
+                HairMasterNode.PositionSlotId
             },
             UseInPreview = true
         };
@@ -209,7 +209,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             Name = "TransparentDepthPostpass",
             LightMode = "TransparentDepthPostpass",
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_DEPTH_ONLY",
             BlendOverride = "Blend One Zero",
@@ -225,12 +225,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdDepthPostpassSlotId,
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdDepthPostpassSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                HDHairMasterNode.PositionSlotId
+                HairMasterNode.PositionSlotId
             },
             UseInPreview = true
         };
@@ -239,7 +239,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             Name = "TransparentBackface",
             LightMode = "TransparentBackface",
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_FORWARD",
             CullOverride = "Cull Front",
@@ -269,37 +269,37 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.AlbedoSlotId,
-                HDHairMasterNode.NormalSlotId,
-                HDHairMasterNode.SpecularOcclusionSlotId,
-                HDHairMasterNode.BentNormalSlotId,
-                HDHairMasterNode.TangentSlotId,
-                HDHairMasterNode.SubsurfaceMaskSlotId,
-                HDHairMasterNode.ThicknessSlotId,
-                HDHairMasterNode.DiffusionProfileSlotId,
-                HDHairMasterNode.SmoothnessSlotId,
-                HDHairMasterNode.AmbientOcclusionSlotId,
-                HDHairMasterNode.EmissionSlotId,
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdSlotId,
-                HDHairMasterNode.SpecularAAScreenSpaceVarianceSlotId,
-                HDHairMasterNode.SpecularAAThresholdSlotId,
-                HDHairMasterNode.SpecularTintSlotId,
-                HDHairMasterNode.SpecularShiftSlotId,
-                HDHairMasterNode.SecondarySpecularTintSlotId,
-                HDHairMasterNode.SecondarySmoothnessSlotId,
-                HDHairMasterNode.SecondarySpecularShiftSlotId,
+                HairMasterNode.AlbedoSlotId,
+                HairMasterNode.NormalSlotId,
+                HairMasterNode.SpecularOcclusionSlotId,
+                HairMasterNode.BentNormalSlotId,
+                HairMasterNode.TangentSlotId,
+                HairMasterNode.SubsurfaceMaskSlotId,
+                HairMasterNode.ThicknessSlotId,
+                HairMasterNode.DiffusionProfileSlotId,
+                HairMasterNode.SmoothnessSlotId,
+                HairMasterNode.AmbientOcclusionSlotId,
+                HairMasterNode.EmissionSlotId,
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdSlotId,
+                HairMasterNode.SpecularAAScreenSpaceVarianceSlotId,
+                HairMasterNode.SpecularAAThresholdSlotId,
+                HairMasterNode.SpecularTintSlotId,
+                HairMasterNode.SpecularShiftSlotId,
+                HairMasterNode.SecondarySpecularTintSlotId,
+                HairMasterNode.SecondarySmoothnessSlotId,
+                HairMasterNode.SecondarySpecularShiftSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                HDHairMasterNode.PositionSlotId
+                HairMasterNode.PositionSlotId
             },
             UseInPreview = true
         };
 
         Pass m_PassDepthForwardOnly = new Pass()
         {
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
 
             Name = "Depth prepass",
@@ -331,9 +331,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.SmoothnessSlotId,
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdSlotId
+                HairMasterNode.SmoothnessSlotId,
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdSlotId
             },
             RequiredFields = new List<string>()
             {
@@ -356,7 +356,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             VertexShaderSlots = new List<int>()
             {
-                HDHairMasterNode.PositionSlotId
+                HairMasterNode.PositionSlotId
             },
 
             UseInPreview = false
@@ -366,7 +366,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             Name = "Forward",
             LightMode = "ForwardOnly",
-            TemplateName = "HDHairPass.template",
+            TemplateName = "HairPass.template",
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_FORWARD",
             ExtraDefines = new List<string>()
@@ -408,36 +408,36 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                HDHairMasterNode.AlbedoSlotId,
-                HDHairMasterNode.NormalSlotId,
-                HDHairMasterNode.SpecularOcclusionSlotId,
-                HDHairMasterNode.BentNormalSlotId,
-                HDHairMasterNode.TangentSlotId,
-                HDHairMasterNode.SubsurfaceMaskSlotId,
-                HDHairMasterNode.ThicknessSlotId,
-                HDHairMasterNode.DiffusionProfileSlotId,
-                HDHairMasterNode.SmoothnessSlotId,
-                HDHairMasterNode.AmbientOcclusionSlotId,
-                HDHairMasterNode.EmissionSlotId,
-                HDHairMasterNode.AlphaSlotId,
-                HDHairMasterNode.AlphaThresholdSlotId,
-                HDHairMasterNode.SpecularAAScreenSpaceVarianceSlotId,
-                HDHairMasterNode.SpecularAAThresholdSlotId,
-                HDHairMasterNode.SpecularTintSlotId,
-                HDHairMasterNode.SpecularShiftSlotId,
-                HDHairMasterNode.SecondarySpecularTintSlotId,
-                HDHairMasterNode.SecondarySmoothnessSlotId,
-                HDHairMasterNode.SecondarySpecularShiftSlotId,
+                HairMasterNode.AlbedoSlotId,
+                HairMasterNode.NormalSlotId,
+                HairMasterNode.SpecularOcclusionSlotId,
+                HairMasterNode.BentNormalSlotId,
+                HairMasterNode.TangentSlotId,
+                HairMasterNode.SubsurfaceMaskSlotId,
+                HairMasterNode.ThicknessSlotId,
+                HairMasterNode.DiffusionProfileSlotId,
+                HairMasterNode.SmoothnessSlotId,
+                HairMasterNode.AmbientOcclusionSlotId,
+                HairMasterNode.EmissionSlotId,
+                HairMasterNode.AlphaSlotId,
+                HairMasterNode.AlphaThresholdSlotId,
+                HairMasterNode.SpecularAAScreenSpaceVarianceSlotId,
+                HairMasterNode.SpecularAAThresholdSlotId,
+                HairMasterNode.SpecularTintSlotId,
+                HairMasterNode.SpecularShiftSlotId,
+                HairMasterNode.SecondarySpecularTintSlotId,
+                HairMasterNode.SecondarySmoothnessSlotId,
+                HairMasterNode.SecondarySpecularShiftSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                HDHairMasterNode.PositionSlotId
+                HairMasterNode.PositionSlotId
             },
             UseInPreview = true,
 
             OnGeneratePassImpl = (IMasterNode node, ref Pass pass) =>
             {
-                var masterNode = node as HDHairMasterNode;
+                var masterNode = node as HairMasterNode;
                 pass.StencilOverride = new List<string>()
                 {
                     "// Stencil setup",
@@ -476,7 +476,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             HashSet<string> activeFields = new HashSet<string>();
 
-            HDHairMasterNode masterNode = iMasterNode as HDHairMasterNode;
+            HairMasterNode masterNode = iMasterNode as HairMasterNode;
             if (masterNode == null)
             {
                 return activeFields;
@@ -503,7 +503,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             switch (masterNode.materialType)
             {
-                case HDHairMasterNode.MaterialType.KajiyaKay:
+                case HairMasterNode.MaterialType.KajiyaKay:
                     activeFields.Add("Material.KajiyaKay");
                     break;
 
@@ -515,17 +515,17 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             if (masterNode.alphaTest.isOn)
             {
                 int count = 0;
-                if (pass.PixelShaderUsesSlot(HDHairMasterNode.AlphaThresholdSlotId))
+                if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaThresholdSlotId))
                 { 
                     activeFields.Add("AlphaTest");
                     ++count;
                 }
-                if (pass.PixelShaderUsesSlot(HDHairMasterNode.AlphaThresholdDepthPrepassSlotId))
+                if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaThresholdDepthPrepassSlotId))
                 {
                     activeFields.Add("AlphaTestPrepass");
                     ++count;
                 }
-                if (pass.PixelShaderUsesSlot(HDHairMasterNode.AlphaThresholdDepthPostpassSlotId))
+                if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaThresholdDepthPostpassSlotId))
                 {
                     activeFields.Add("AlphaTestPostpass");
                     ++count;
@@ -571,17 +571,17 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 activeFields.Add("DisableSSR");
             }
 
-            if (masterNode.specularAA.isOn && pass.PixelShaderUsesSlot(HDHairMasterNode.SpecularAAThresholdSlotId) && pass.PixelShaderUsesSlot(HDHairMasterNode.SpecularAAScreenSpaceVarianceSlotId))
+            if (masterNode.specularAA.isOn && pass.PixelShaderUsesSlot(HairMasterNode.SpecularAAThresholdSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.SpecularAAScreenSpaceVarianceSlotId))
             {
                 activeFields.Add("Specular.AA");
             }
 
-            if (masterNode.IsSlotConnected(HDHairMasterNode.BentNormalSlotId) && pass.PixelShaderUsesSlot(HDHairMasterNode.BentNormalSlotId))
+            if (masterNode.IsSlotConnected(HairMasterNode.BentNormalSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.BentNormalSlotId))
             {
                 activeFields.Add("BentNormal");
             }
 
-            if (masterNode.IsSlotConnected(HDHairMasterNode.TangentSlotId) && pass.PixelShaderUsesSlot(HDHairMasterNode.TangentSlotId))
+            if (masterNode.IsSlotConnected(HairMasterNode.TangentSlotId) && pass.PixelShaderUsesSlot(HairMasterNode.TangentSlotId))
             {
                 activeFields.Add("Tangent");
             }
@@ -614,9 +614,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     break;
             }
 
-            if (pass.PixelShaderUsesSlot(HDHairMasterNode.AmbientOcclusionSlotId))
+            if (pass.PixelShaderUsesSlot(HairMasterNode.AmbientOcclusionSlotId))
             {
-                var occlusionSlot = masterNode.FindSlot<Vector1MaterialSlot>(HDHairMasterNode.AmbientOcclusionSlotId);
+                var occlusionSlot = masterNode.FindSlot<Vector1MaterialSlot>(HairMasterNode.AmbientOcclusionSlotId);
                 if (occlusionSlot.value != occlusionSlot.defaultValue)
                 {
                     activeFields.Add("Occlusion");
@@ -626,7 +626,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             return activeFields;
         }
 
-        private static bool GenerateShaderPassHair(HDHairMasterNode masterNode, Pass pass, GenerationMode mode, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
+        private static bool GenerateShaderPassHair(HairMasterNode masterNode, Pass pass, GenerationMode mode, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
         {
             if (mode == GenerationMode.ForReals || pass.UseInPreview)
             {
@@ -638,7 +638,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HashSet<string> activeFields = GetActiveFieldsFromMasterNode(masterNode, pass);
 
                 // use standard shader pass generation
-                bool vertexActive = masterNode.IsSlotConnected(HDHairMasterNode.PositionSlotId);
+                bool vertexActive = masterNode.IsSlotConnected(HairMasterNode.PositionSlotId);
                 return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, result, sourceAssetDependencyPaths, vertexActive);
             }
             else
@@ -651,13 +651,13 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             if (sourceAssetDependencyPaths != null)
             {
-                // HDHairSubShader.cs
-                sourceAssetDependencyPaths.Add(AssetDatabase.GUIDToAssetPath("bac1a9627cfec924fa2ea9c65af8eeca"));
+                // HairSubShader.cs
+                sourceAssetDependencyPaths.Add(AssetDatabase.GUIDToAssetPath("c3f20efb64673e0488a2c8e986a453fa"));
                 // HDSubShaderUtilities.cs
                 sourceAssetDependencyPaths.Add(AssetDatabase.GUIDToAssetPath("713ced4e6eef4a44799a4dd59041484b"));
             }
 
-            var masterNode = iMasterNode as HDHairMasterNode;
+            var masterNode = iMasterNode as HairMasterNode;
 
             var subShader = new ShaderGenerator();
             subShader.AddShaderChunk("SubShader", true);
@@ -711,7 +711,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
             subShader.Deindent();
             subShader.AddShaderChunk("}", true);
-            subShader.AddShaderChunk(@"CustomEditor ""UnityEditor.ShaderGraph.HDHairGUI""");
+            subShader.AddShaderChunk(@"CustomEditor ""UnityEditor.Experimental.Rendering.HDPipeline.HairGUI""");
 
             return subShader.GetShaderString(0);
         }

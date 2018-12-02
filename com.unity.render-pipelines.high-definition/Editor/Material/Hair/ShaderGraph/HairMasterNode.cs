@@ -12,8 +12,8 @@ using UnityEngine.Experimental.Rendering.HDPipeline;
 namespace UnityEditor.ShaderGraph
 {
     [Serializable]
-    [Title("Master", "HDHair")]
-    public class HDHairMasterNode : MasterNode<IHDHairSubShader>, IMayRequirePosition, IMayRequireNormal, IMayRequireTangent
+    [Title("Master", "Hair")]
+    public class HairMasterNode : MasterNode<IHairSubShader>, IMayRequirePosition, IMayRequireNormal, IMayRequireTangent
     {
         public const string PositionSlotName = "Position";
         public const int PositionSlotId = 0;
@@ -495,7 +495,7 @@ namespace UnityEditor.ShaderGraph
         }
 
 
-        public HDHairMasterNode()
+        public HairMasterNode()
         {
             UpdateNodeAfterDeserialization();
         }
@@ -630,7 +630,7 @@ namespace UnityEditor.ShaderGraph
 
         protected override VisualElement CreateCommonSettingsElement()
         {
-            return new HDHairSettingsView(this);
+            return new HairSettingsView(this);
         }
 
         public NeededCoordinateSpace RequiresNormal(ShaderStageCapability stageCapability)
@@ -683,7 +683,7 @@ namespace UnityEditor.ShaderGraph
 
         public bool RequiresSplitLighting()
         {
-            // return materialType == HDHairMasterNode.MaterialType.SubsurfaceScattering;
+            // return materialType == HairMasterNode.MaterialType.SubsurfaceScattering;
             return true;
         }
 

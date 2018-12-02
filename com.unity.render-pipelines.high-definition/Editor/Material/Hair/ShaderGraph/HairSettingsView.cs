@@ -1,18 +1,19 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Experimental.UIElements;
+using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.Experimental.UIElements;
+using UnityEngine.UIElements;
 using UnityEditor.Graphing.Util;
+using UnityEditor.ShaderGraph;
+using UnityEditor.ShaderGraph.Drawing;
 using UnityEditor.ShaderGraph.Drawing.Controls;
+using UnityEditor.Experimental.Rendering.HDPipeline;
 using UnityEngine.Experimental.Rendering.HDPipeline;
 
-namespace UnityEditor.ShaderGraph.Drawing
+namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
 {
-    public class HDHairSettingsView : VisualElement
+    class HairSettingsView : VisualElement
     {
-        HDHairMasterNode m_Node;
+        HairMasterNode m_Node;
 
         IntegerField m_SortPiorityField;
 
@@ -26,7 +27,7 @@ namespace UnityEditor.ShaderGraph.Drawing
             return new Label(label + text);
         }
 
-        public HDHairSettingsView(HDHairMasterNode node)
+        public HairSettingsView(HairMasterNode node)
         {
             m_Node = node;
             PropertySheet ps = new PropertySheet();
@@ -37,7 +38,7 @@ namespace UnityEditor.ShaderGraph.Drawing
                 row.Add(new EnumField(SurfaceType.Opaque), (field) =>
                 {
                     field.value = m_Node.surfaceType;
-                    field.OnValueChanged(ChangeSurfaceType);
+                    field.RegisterValueChangedCallback(ChangeSurfaceType);
                 });
             });
 
@@ -63,15 +64,6 @@ namespace UnityEditor.ShaderGraph.Drawing
                     });
                 });
 
-                ps.Add(new PropertyRow(CreateLabel("Draw Before Refraction", indentLevel)), (row) =>
-                {
-                    row.Add(new Toggle(), (toggle) =>
-                    {
-                        toggle.value = m_Node.drawBeforeRefraction.isOn;
-                        toggle.OnToggleChanged(ChangeDrawBeforeRefraction);
-                    });
-                });
-
                 ps.Add(new PropertyRow(CreateLabel("Back Then Front Rendering", indentLevel)), (row) =>
                 {
                     row.Add(new Toggle(), (toggle) =>
@@ -87,7 +79,7 @@ namespace UnityEditor.ShaderGraph.Drawing
                     row.Add(m_SortPiorityField, (field) =>
                     {
                         field.value = m_Node.sortPriority;
-                        field.OnValueChanged(ChangeSortPriority);
+                        field.RegisterValueChangedCallback(ChangeSortPriority);
                     });
                 });
                 --indentLevel;
@@ -134,24 +126,6 @@ namespace UnityEditor.ShaderGraph.Drawing
                 });
             });
 
-            ps.Add(new PropertyRow(CreateLabel("Material Type", indentLevel)), (row) =>
-            {
-                row.Add(new EnumField(HDHairMasterNode.MaterialType.KajiyaKay), (field) =>
-                {
-                    field.value = m_Node.materialType;
-                    field.OnValueChanged(ChangeMaterialType);
-                });
-            });
-
-            ps.Add(new PropertyRow(CreateLabel("Receive Decals", indentLevel)), (row) =>
-            {
-                row.Add(new Toggle(), (toggle) =>
-                {
-                    toggle.value = m_Node.receiveDecals.isOn;
-                    toggle.OnToggleChanged(ChangeDecal);
-                });
-            });
-
             ps.Add(new PropertyRow(CreateLabel("Transmission", indentLevel)), (row) =>
             {
                 row.Add(new Toggle(), (toggle) =>
@@ -171,6 +145,24 @@ namespace UnityEditor.ShaderGraph.Drawing
                 });
             });
 
+            ps.Add(new PropertyRow(CreateLabel("Receive Decals", indentLevel)), (row) =>
+            {
+                row.Add(new Toggle(), (toggle) =>
+                {
+                    toggle.value = m_Node.receiveDecals.isOn;
+                    toggle.OnToggleChanged(ChangeDecal);
+                });
+            });
+
+            ps.Add(new PropertyRow(CreateLabel("Receives SSR", indentLevel)), (row) =>
+            {
+                row.Add(new Toggle(), (toggle) =>
+                {
+                    toggle.value = m_Node.receiveSSR.isOn;
+                    toggle.OnToggleChanged(ChangeSSR);
+                });
+            });
+
             ps.Add(new PropertyRow(CreateLabel("Specular AA", indentLevel)), (row) =>
             {
                 row.Add(new Toggle(), (toggle) =>
@@ -185,7 +177,7 @@ namespace UnityEditor.ShaderGraph.Drawing
                 row.Add(new EnumField(SpecularOcclusionMode.Off), (field) =>
                 {
                     field.value = m_Node.specularOcclusionMode;
-                    field.OnValueChanged(ChangeSpecularOcclusionMode);
+                    field.RegisterValueChangedCallback(ChangeSpecularOcclusionMode);
                 });
             });
 
@@ -210,15 +202,6 @@ namespace UnityEditor.ShaderGraph.Drawing
             m_Node.doubleSidedMode = (DoubleSidedMode)evt.newValue;
         }
 
-        void ChangeMaterialType(ChangeEvent<Enum> evt)
-        {
-            if (Equals(m_Node.materialType, evt.newValue))
-                return;
-
-            m_Node.owner.owner.RegisterCompleteObjectUndo("Material Type Change");
-            m_Node.materialType = (HDHairMasterNode.MaterialType)evt.newValue;
-        }
-
         void ChangeTransmission(ChangeEvent<bool> evt)
         {
             m_Node.owner.owner.RegisterCompleteObjectUndo("Transmission Change");
@@ -238,7 +221,7 @@ namespace UnityEditor.ShaderGraph.Drawing
         void ChangeBlendMode(ChangeEvent<Enum> evt)
         {
             // Make sure the mapping is correct by handling each case.
-            AlphaMode alphaMode = GetAlphaMode((HDHairMasterNode.AlphaModeLit)evt.newValue);
+            AlphaMode alphaMode = GetAlphaMode((HairMasterNode.AlphaModeLit)evt.newValue);
 
             if (Equals(m_Node.alphaMode, alphaMode))
                 return;
@@ -261,14 +244,6 @@ namespace UnityEditor.ShaderGraph.Drawing
             ToggleData td = m_Node.transparencyFog;
             td.isOn = evt.newValue;
             m_Node.transparencyFog = td;
-        }
-
-        void ChangeDrawBeforeRefraction(ChangeEvent<bool> evt)
-        {
-            m_Node.owner.owner.RegisterCompleteObjectUndo("Draw Before Refraction Change");
-            ToggleData td = m_Node.drawBeforeRefraction;
-            td.isOn = evt.newValue;
-            m_Node.drawBeforeRefraction = td;
         }
 
         void ChangeBackThenFrontRendering(ChangeEvent<bool> evt)
@@ -322,6 +297,14 @@ namespace UnityEditor.ShaderGraph.Drawing
             m_Node.receiveDecals = td;
         }
 
+        void ChangeSSR(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("SSR Change");
+            ToggleData td = m_Node.receiveSSR;
+            td.isOn = evt.newValue;
+            m_Node.receiveSSR = td;
+        }
+
         void ChangeSpecularAA(ChangeEvent<bool> evt)
         {
             m_Node.owner.owner.RegisterCompleteObjectUndo("Specular AA Change");
@@ -347,14 +330,16 @@ namespace UnityEditor.ShaderGraph.Drawing
             m_Node.specularOcclusionMode = (SpecularOcclusionMode)evt.newValue;
         }
 
-        public AlphaMode GetAlphaMode(HDHairMasterNode.AlphaModeLit alphaModeLit)
+        public AlphaMode GetAlphaMode(HairMasterNode.AlphaModeLit alphaModeLit)
         {
             switch (alphaModeLit)
             {
-                case HDHairMasterNode.AlphaModeLit.Alpha:
+                case HairMasterNode.AlphaModeLit.Alpha:
                     return AlphaMode.Alpha;
-                case HDHairMasterNode.AlphaModeLit.PremultipliedAlpha:
+                case HairMasterNode.AlphaModeLit.PremultipliedAlpha:
                     return AlphaMode.Premultiply;
+                case HairMasterNode.AlphaModeLit.Additive:
+                    return AlphaMode.Additive;
                 default:
                     {
                         Debug.LogWarning("Not supported: " + alphaModeLit);
@@ -364,18 +349,20 @@ namespace UnityEditor.ShaderGraph.Drawing
             }
         }
 
-        public HDHairMasterNode.AlphaModeLit GetAlphaModeLit(AlphaMode alphaMode)
+        public HairMasterNode.AlphaModeLit GetAlphaModeLit(AlphaMode alphaMode)
         {
             switch (alphaMode)
             {
                 case AlphaMode.Alpha:
-                    return HDHairMasterNode.AlphaModeLit.Alpha;
+                    return HairMasterNode.AlphaModeLit.Alpha;
                 case AlphaMode.Premultiply:
-                    return HDHairMasterNode.AlphaModeLit.PremultipliedAlpha;
+                    return HairMasterNode.AlphaModeLit.PremultipliedAlpha;
+                case AlphaMode.Additive:
+                    return HairMasterNode.AlphaModeLit.Additive;
                 default:
                     {
                         Debug.LogWarning("Not supported: " + alphaMode);
-                        return HDHairMasterNode.AlphaModeLit.Alpha;
+                        return HairMasterNode.AlphaModeLit.Alpha;
                     }                    
             }
         }

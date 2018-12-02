@@ -1,10 +1,9 @@
-using System;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.HDPipeline;
 
-namespace UnityEditor.ShaderGraph
+namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
-    public class HDHairGUI : ShaderGUI
+    public class HairGUI : ShaderGUI
     {
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] props)
         {
