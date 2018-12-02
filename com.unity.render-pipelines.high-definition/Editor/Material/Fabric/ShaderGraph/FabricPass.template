@@ -188,13 +188,12 @@ $include("SharedCode.template.hlsl")
         $SurfaceDescription.DiffusionProfile:           surfaceData.diffusionProfile =          surfaceDescription.DiffusionProfile;
         $SurfaceDescription.SubsurfaceMask:             surfaceData.subsurfaceMask =            surfaceDescription.SubsurfaceMask;
         $SurfaceDescription.Thickness:                  surfaceData.thickness =                 surfaceDescription.Thickness;
-        $SurfaceDescription.DiffusionProfile:           surfaceData.diffusionProfile =          surfaceDescription.DiffusionProfile;
         $SurfaceDescription.Anisotropy:                 surfaceData.anisotropy =                surfaceDescription.Anisotropy;
         
         // These static material feature allow compile time optimization
         surfaceData.materialFeatures = 0;
 
-// Transform the preprocess macro into a material feature (note that silk flag is deduced from the abscence of this one)
+        // Transform the preprocess macro into a material feature (note that silk flag is deduced from the abscence of this one)
 #ifdef _MATERIAL_FEATURE_COTTON_WOOL
         surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_FABRIC_COTTON_WOOL;
 #endif
