@@ -44,7 +44,7 @@ void ClampRoughness(inout BSDFData bsdfData, float minRoughness)
 
 float ComputeMicroShadowing(BSDFData bsdfData, float NdotL)
 {
-    return 1; // TODO
+    return ComputeMicroShadowing(bsdfData.ambientOcclusion, NdotL, _MicroShadowOpacity);
 }
 
 bool MaterialSupportsTransmission(BSDFData bsdfData)

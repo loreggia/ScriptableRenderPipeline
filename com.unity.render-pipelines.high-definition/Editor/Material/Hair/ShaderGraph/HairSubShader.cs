@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 
 namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
-    public class HairSubShader : IHairSubShader
+    class HairSubShader : IHairSubShader
     {
         Pass m_PassMETA = new Pass()
         {
@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HairMasterNode.AmbientOcclusionSlotId,
                 HairMasterNode.EmissionSlotId,
                 HairMasterNode.AlphaSlotId,
-                HairMasterNode.AlphaThresholdSlotId,
+                HairMasterNode.AlphaClipThresholdSlotId,
                 HairMasterNode.SpecularAAScreenSpaceVarianceSlotId,
                 HairMasterNode.SpecularAAThresholdSlotId,
                 HairMasterNode.SpecularTintSlotId,
@@ -80,7 +80,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             PixelShaderSlots = new List<int>()
             {
                 HairMasterNode.AlphaSlotId,
-                HairMasterNode.AlphaThresholdSlotId
+                HairMasterNode.AlphaClipThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
@@ -108,7 +108,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             PixelShaderSlots = new List<int>()
             {
                 HairMasterNode.AlphaSlotId,
-                HairMasterNode.AlphaThresholdSlotId
+                HairMasterNode.AlphaClipThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
@@ -141,7 +141,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HairMasterNode.NormalSlotId,
                 HairMasterNode.SmoothnessSlotId,
                 HairMasterNode.AlphaSlotId,
-                HairMasterNode.AlphaThresholdSlotId
+                HairMasterNode.AlphaClipThresholdSlotId
             },
 
             RequiredFields = new List<string>()
@@ -685,7 +685,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             subShader.AddShaderChunk("{", true);
             subShader.Indent();
             {
-                SurfaceMaterialTags materialTags = HDSubShaderUtilities.BuildMaterialTags(masterNode.surfaceType, masterNode.alphaTest.isOn, masterNode.drawBeforeRefraction.isOn, masterNode.sortPriority);
+                SurfaceMaterialTags materialTags = HDSubShaderUtilities.BuildMaterialTags(masterNode.surfaceType, masterNode.alphaTest.isOn, false, masterNode.sortPriority);
 
                 // Add tags at the SubShader level
                 {

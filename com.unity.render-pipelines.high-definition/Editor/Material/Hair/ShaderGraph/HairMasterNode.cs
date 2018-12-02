@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
     [Serializable]
     [Title("Master", "Hair")]
-    public class HairMasterNode : MasterNode<IHairSubShader>, IMayRequirePosition, IMayRequireNormal, IMayRequireTangent
+    class HairMasterNode : MasterNode<IHairSubShader>, IMayRequirePosition, IMayRequireNormal, IMayRequireTangent
     {
         public const string PositionSlotName = "Position";
         public const int PositionSlotId = 0;

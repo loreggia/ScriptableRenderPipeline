@@ -122,7 +122,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
                 row.Add(new EnumField(DoubleSidedMode.Disabled), (field) =>
                 {
                     field.value = m_Node.doubleSidedMode;
-                    field.OnValueChanged(ChangeDoubleSidedMode);
+                    field.RegisterValueChangedCallback(ChangeDoubleSidedMode);
                 });
             });
 
@@ -311,14 +311,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
             ToggleData td = m_Node.specularAA;
             td.isOn = evt.newValue;
             m_Node.specularAA = td;
-        }
-
-        void ChangeEnergyConservingSpecular(ChangeEvent<bool> evt)
-        {
-            m_Node.owner.owner.RegisterCompleteObjectUndo("Energy Conserving Specular Change");
-            ToggleData td = m_Node.energyConservingSpecular;
-            td.isOn = evt.newValue;
-            m_Node.energyConservingSpecular = td;
         }
 
         void ChangeSpecularOcclusionMode(ChangeEvent<Enum> evt)

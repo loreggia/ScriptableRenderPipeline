@@ -26,14 +26,6 @@ float3 GetNormalForShadowBias(BSDFData bsdfData)
     return bsdfData.geomNormalWS;
 }
 
-// Assume bsdfData.normalWS is init
-void FillMaterialAnisotropy(float anisotropy, float3 tangentWS, float3 bitangentWS, inout BSDFData bsdfData)
-{
-    bsdfData.anisotropy = anisotropy;
-    bsdfData.tangentWS = tangentWS;
-    bsdfData.bitangentWS = bitangentWS;
-}
-
 void ClampRoughness(inout BSDFData bsdfData, float minRoughness)
 {
     bsdfData.roughnessT = max(minRoughness, bsdfData.roughnessT);
@@ -42,7 +34,7 @@ void ClampRoughness(inout BSDFData bsdfData, float minRoughness)
 
 float ComputeMicroShadowing(BSDFData bsdfData, float NdotL)
 {
-    return 1; // TODO
+    return ComputeMicroShadowing(bsdfData.ambientOcclusion, NdotL, _MicroShadowOpacity);
 }
 
 bool MaterialSupportsTransmission(BSDFData bsdfData)
@@ -84,7 +76,6 @@ void ApplyDebugToSurfaceData(float3x3 worldToTangent, inout SurfaceData surfaceD
 #endif
 }
 
-// This function is similar to ApplyDebugToSurfaceData but for BSDFData
 // Note: This will be available and used in ShaderPassForward.hlsl since in Hair.shader,
 // just before including the core code of the pass (ShaderPassForward.hlsl) we include
 // Material.hlsl (or Lighting.hlsl which includes it) which in turn includes us,
