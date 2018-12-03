@@ -9,7 +9,13 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
     using _ = CoreEditorUtils;
     using CED = CoreEditorDrawer<SerializedGlobalLightLoopSettings>;
 
+<<<<<<< HEAD
     static partial class GlobalLightLoopSettingsUI //: BaseUI<SerializedGlobalLightLoopSettings>
+=======
+#pragma warning disable 618 // TODO: update to IUpdateable interface
+    class GlobalLightLoopSettingsUI : BaseUI<SerializedGlobalLightLoopSettings>
+#pragma warning restore 618
+>>>>>>> HDRP/probeRenderAPI
     {
         enum Expandable
         {

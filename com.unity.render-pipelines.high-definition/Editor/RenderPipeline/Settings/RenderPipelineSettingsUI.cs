@@ -7,8 +7,8 @@ using UnityEngine;
 namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
     using CED = CoreEditorDrawer<SerializedRenderPipelineSettings>;
-
-    static class RenderPipelineSettingsUI //: BaseUI<SerializedRenderPipelineSettings>
+    
+    static class RenderPipelineSettingsUI
     {
         enum Expandable
         {

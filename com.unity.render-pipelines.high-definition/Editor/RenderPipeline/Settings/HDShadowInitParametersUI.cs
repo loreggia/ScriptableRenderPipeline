@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
     using CED = CoreEditorDrawer<SerializedHDShadowInitParameters>;
-
+    
     static class HDShadowInitParametersUI
     {
         enum ShadowResolution

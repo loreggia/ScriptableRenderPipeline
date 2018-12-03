@@ -5,8 +5,8 @@ using UnityEngine.Experimental.Rendering.HDPipeline;
 namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
     using CED = CoreEditorDrawer<SerializedGlobalDecalSettings>;
-
-    class GlobalDecalSettingsUI
+    
+    static class GlobalDecalSettingsUI
     {
         enum Expandable
         {
