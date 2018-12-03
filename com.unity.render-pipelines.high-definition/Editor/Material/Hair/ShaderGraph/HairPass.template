@@ -191,7 +191,7 @@ $include("SharedCode.template.hlsl")
         $SurfaceDescription.SpecularTint:                   surfaceData.specularTint =                  surfaceDescription.SpecularTint;
         $SurfaceDescription.SpecularShift:                  surfaceData.specularShift =                 surfaceDescription.SpecularShift;
 
-        $SurfaceDescription.SecondaryPerceptualSmoothness:  surfaceData.secondaryPerceptualSmoothness = surfaceDescription.SecondaryPerceptualSmoothness;
+        $SurfaceDescription.SecondarySmoothness:            surfaceData.secondaryPerceptualSmoothness = surfaceDescription.SecondarySmoothness;
         $SurfaceDescription.SecondarySpecularTint:          surfaceData.secondarySpecularTint =         surfaceDescription.SecondarySpecularTint;
         $SurfaceDescription.SecondarySpecularShift:         surfaceData.secondarySpecularShift =        surfaceDescription.SecondarySpecularShift;
      
