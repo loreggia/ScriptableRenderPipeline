@@ -114,6 +114,15 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
                         toggle.OnToggleChanged(ChangeAlphaTestPostpass);
                     });
                 });
+
+                ps.Add(new PropertyRow(CreateLabel("Alpha Cutoff Shadow", indentLevel)), (row) =>
+                {
+                    row.Add(new Toggle(), (toggle) =>
+                    {
+                        toggle.value = m_Node.alphaTestShadow.isOn;
+                        toggle.OnToggleChanged(ChangeAlphaTestShadow);
+                    });
+                });
                 --indentLevel;
             }
 
@@ -290,6 +299,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
             ToggleData td = m_Node.alphaTestDepthPostpass;
             td.isOn = evt.newValue;
             m_Node.alphaTestDepthPostpass = td;
+        }
+
+        void ChangeAlphaTestShadow(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Alpha Test Shadow Change");
+            ToggleData td = m_Node.alphaTestShadow;
+            td.isOn = evt.newValue;
+            m_Node.alphaTestShadow = td;
         }
 
         void ChangeDecal(ChangeEvent<bool> evt)

@@ -80,7 +80,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             PixelShaderSlots = new List<int>()
             {
                 HairMasterNode.AlphaSlotId,
-                HairMasterNode.AlphaClipThresholdSlotId
+                HairMasterNode.AlphaClipThresholdSlotId,
+                HairMasterNode.AlphaClipThresholdShadowSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -284,7 +285,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             PixelShaderSlots = new List<int>()
             {
                 HairMasterNode.AlphaSlotId,
-                HairMasterNode.AlphaThresholdDepthPrepassSlotId,
+                HairMasterNode.AlphaClipThresholdDepthPrepassSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -482,7 +483,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             PixelShaderSlots = new List<int>()
             {
                 HairMasterNode.AlphaSlotId,
-                HairMasterNode.AlphaThresholdDepthPostpassSlotId,
+                HairMasterNode.AlphaClipThresholdDepthPostpassSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -534,17 +535,25 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             if (masterNode.alphaTest.isOn)
             {
                 int count = 0;
-                if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaClipThresholdSlotId))
+
+                // If alpha test shadow is enable, we use it, otherwise we use the regular test
+                if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaClipThresholdShadowSlotId) && masterNode.alphaTestShadow.isOn)
+                {
+                    activeFields.Add("AlphaTestShadow");
+                    ++count;
+                }
+                else if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaClipThresholdSlotId))
                 { 
                     activeFields.Add("AlphaTest");
                     ++count;
                 }
-                if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaThresholdDepthPrepassSlotId))
+                // Other alpha test are suppose to be alone
+                else if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaClipThresholdDepthPrepassSlotId))
                 {
                     activeFields.Add("AlphaTestPrepass");
                     ++count;
                 }
-                if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaThresholdDepthPostpassSlotId))
+                else if (pass.PixelShaderUsesSlot(HairMasterNode.AlphaClipThresholdDepthPostpassSlotId))
                 {
                     activeFields.Add("AlphaTestPostpass");
                     ++count;

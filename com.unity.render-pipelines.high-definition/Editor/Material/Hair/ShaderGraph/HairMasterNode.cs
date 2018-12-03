@@ -62,10 +62,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public const int AlphaClipThresholdSlotId = 13;
 
         public const string AlphaClipThresholdDepthPrepassSlotName = "AlphaClipThresholdDepthPrepass";
-        public const int AlphaThresholdDepthPrepassSlotId = 14;
+        public const int AlphaClipThresholdDepthPrepassSlotId = 14;
 
         public const string AlphaClipThresholdDepthPostpassSlotName = "AlphaClipThresholdDepthPostpass";
-        public const int AlphaThresholdDepthPostpassSlotId = 15;
+        public const int AlphaClipThresholdDepthPostpassSlotId = 15;
 
         public const string SpecularAAScreenSpaceVarianceSlotName = "SpecularAAScreenSpaceVariance";
         public const int SpecularAAScreenSpaceVarianceSlotId = 16;
@@ -89,6 +89,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public const string SecondarySpecularShiftSlotName = "SecondarySpecularShift";
         public const int SecondarySpecularShiftSlotId = 22;
 
+        public const string AlphaClipThresholdShadowSlotName = "AlphaClipThresholdShadow";
+        public const int AlphaClipThresholdShadowSlotId = 23;
 
         public enum MaterialType
         {
@@ -122,18 +124,19 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             Emission = 1 << EmissionSlotId,
             Alpha = 1 << AlphaSlotId,
             AlphaClipThreshold = 1 << AlphaClipThresholdSlotId,
-            AlphaThresholdDepthPrepass = 1 << AlphaThresholdDepthPrepassSlotId,
-            AlphaThresholdDepthPostpass = 1 << AlphaThresholdDepthPostpassSlotId,
+            AlphaClipThresholdDepthPrepass = 1 << AlphaClipThresholdDepthPrepassSlotId,
+            AlphaClipThresholdDepthPostpass = 1 << AlphaClipThresholdDepthPostpassSlotId,
             SpecularTint = 1 << SpecularTintSlotId,
             SpecularShift = 1 << SpecularShiftSlotId,
             SecondarySpecularTint = 1 << SecondarySpecularTintSlotId,
             SecondarySmoothness = 1 << SecondarySmoothnessSlotId,
-            SecondarySpecularShift = 1 << SecondarySpecularShiftSlotId
+            SecondarySpecularShift = 1 << SecondarySpecularShiftSlotId,
+            AlphaClipThresholdShadow = 1 << AlphaClipThresholdShadowSlotId
         }
 
         const SlotMask KajiyaKaySlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.SpecularOcclusion | SlotMask.BentNormal | SlotMask.Tangent | SlotMask.SubsurfaceMask 
-                                            | SlotMask.Thickness | SlotMask.DiffusionProfile | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.AlphaThresholdDepthPrepass 
-                                                | SlotMask.AlphaThresholdDepthPostpass | SlotMask.SpecularTint | SlotMask.SpecularShift | SlotMask.SecondarySpecularTint | SlotMask.SecondarySmoothness | SlotMask.SecondarySpecularShift;
+                                            | SlotMask.Thickness | SlotMask.DiffusionProfile | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaClipThreshold | SlotMask.AlphaClipThresholdDepthPrepass 
+                                                | SlotMask.AlphaClipThresholdDepthPostpass | SlotMask.SpecularTint | SlotMask.SpecularShift | SlotMask.SecondarySpecularTint | SlotMask.SecondarySmoothness | SlotMask.SecondarySpecularShift | SlotMask.AlphaClipThresholdShadow;
 
         // This could also be a simple array. For now, catch any mismatched data.
         SlotMask GetActiveSlotMask()
@@ -259,6 +262,22 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 if (m_AlphaTestDepthPostpass == value.isOn)
                     return;
                 m_AlphaTestDepthPostpass = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        bool m_AlphaTestShadow;
+
+        public ToggleData alphaTestShadow
+        {
+            get { return new ToggleData(m_AlphaTestShadow); }
+            set
+            {
+                if (m_AlphaTestShadow == value.isOn)
+                    return;
+                m_AlphaTestShadow = value.isOn;
                 UpdateNodeAfterDeserialization();
                 Dirty(ModificationScope.Topological);
             }
@@ -555,15 +574,20 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 AddSlot(new Vector1MaterialSlot(AlphaClipThresholdSlotId, AlphaClipThresholdSlotName, AlphaClipThresholdSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(AlphaClipThresholdSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.AlphaThresholdDepthPrepass) && surfaceType == SurfaceType.Transparent && alphaTest.isOn && alphaTestDepthPrepass.isOn)
+            if (MaterialTypeUsesSlotMask(SlotMask.AlphaClipThresholdDepthPrepass) && surfaceType == SurfaceType.Transparent && alphaTest.isOn && alphaTestDepthPrepass.isOn)
             {
-                AddSlot(new Vector1MaterialSlot(AlphaThresholdDepthPrepassSlotId, AlphaClipThresholdDepthPrepassSlotName, AlphaClipThresholdDepthPrepassSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
-                validSlots.Add(AlphaThresholdDepthPrepassSlotId);
+                AddSlot(new Vector1MaterialSlot(AlphaClipThresholdDepthPrepassSlotId, AlphaClipThresholdDepthPrepassSlotName, AlphaClipThresholdDepthPrepassSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(AlphaClipThresholdDepthPrepassSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.AlphaThresholdDepthPostpass) && surfaceType == SurfaceType.Transparent && alphaTest.isOn && alphaTestDepthPostpass.isOn)
+            if (MaterialTypeUsesSlotMask(SlotMask.AlphaClipThresholdDepthPostpass) && surfaceType == SurfaceType.Transparent && alphaTest.isOn && alphaTestDepthPostpass.isOn)
             {
-                AddSlot(new Vector1MaterialSlot(AlphaThresholdDepthPostpassSlotId, AlphaClipThresholdDepthPostpassSlotName, AlphaClipThresholdDepthPostpassSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
-                validSlots.Add(AlphaThresholdDepthPostpassSlotId);
+                AddSlot(new Vector1MaterialSlot(AlphaClipThresholdDepthPostpassSlotId, AlphaClipThresholdDepthPostpassSlotName, AlphaClipThresholdDepthPostpassSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(AlphaClipThresholdDepthPostpassSlotId);
+            }
+            if (MaterialTypeUsesSlotMask(SlotMask.AlphaClipThresholdShadow) && surfaceType == SurfaceType.Transparent && alphaTest.isOn && alphaTestShadow.isOn)
+            {
+                AddSlot(new Vector1MaterialSlot(AlphaClipThresholdShadowSlotId, AlphaClipThresholdShadowSlotName, AlphaClipThresholdShadowSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(AlphaClipThresholdShadowSlotId);
             }
             if (specularAA.isOn)
             {
