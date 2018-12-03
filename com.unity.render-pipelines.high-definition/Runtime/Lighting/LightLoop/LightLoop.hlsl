@@ -124,6 +124,9 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
             if (evaluateShadows)
             {
                 context.shadowValue = EvaluateRuntimeSunShadow(context, posInput, light, shadowBiasNormal);
+#ifdef IS_COMPUTE
+                shadowIndexUAV[uint3(pixelCoord, 0)] = context.shadowValue > 0 ? 0 : 1;
+#endif
             }
         }
     }
