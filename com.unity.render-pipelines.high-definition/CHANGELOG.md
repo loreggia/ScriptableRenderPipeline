@@ -6,11 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [5.3.0-preview] - 2018-11-xx
 
+### Added
+- Add suport for hair master node (Double kajiya kay - Lambert)
+
 ### Fixed
 - Fixed logic to disable FPTL with stereo rendering
 - Fixed stacklit transmission and sun highlight
 - Fixed decals with stereo rendering
 - Fixed flip logic for postprocessing + VR
+- Fixed SSR with Fabric master node
+- Fixed usage of SSR with transparent on all master node
 
 ### Changed
 - ColorPyramid compute shader passes is swapped to pixel shader passes on platforms where the later is faster (Nintendo Switch).
