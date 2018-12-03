@@ -171,6 +171,8 @@ BSDFData ConvertSurfaceDataToBSDFData(uint2 positionSS, SurfaceData surfaceData)
         // to remove the need to take the square root of sinTH
         bsdfData.specularExponent = exp2(9.0 - 10.0 * PerceptualRoughnessToRoughness(bsdfData.perceptualRoughness));
         bsdfData.secondarySpecularExponent = exp2(9.0 - 10.0 * PerceptualRoughnessToRoughness(bsdfData.secondaryPerceptualRoughness));
+
+        bsdfData.anisotropy = 0.8; // For hair we fix the anisotropy
     }
 
     ApplyDebugToBSDFData(bsdfData);
@@ -206,7 +208,6 @@ void GetBSDFDataDebug(uint paramId, BSDFData bsdfData, inout float3 result, inou
 struct PreLightData
 {
     float NdotV;        // Could be negative due to normal mapping, use ClampNdotV()
-    float partLambdaV;
 
     // IBL
     float3 iblR;                     // Reflected specular direction, used for IBL in EvaluateBSDF_Env()
@@ -224,20 +225,31 @@ PreLightData GetPreLightData(float3 V, PositionInputs posInput, inout BSDFData b
 
     float3 N = bsdfData.normalWS;
     preLightData.NdotV = dot(N, V);
-    preLightData.iblPerceptualRoughness = bsdfData.perceptualRoughness;
 
     float NdotV = ClampNdotV(preLightData.NdotV);
+    float TdotV = dot(bsdfData.tangentWS, V);
+    float BdotV = dot(bsdfData.bitangentWS, V);
 
     float unused;
     float3 iblN;
 
-    GetPreIntegratedFGDGGXAndDisneyDiffuse(NdotV, preLightData.iblPerceptualRoughness, bsdfData.fresnel0, preLightData.specularFGD, preLightData.diffuseFGD, unused);
+    if (HasFlag(bsdfData.materialFeatures, MATERIALFEATUREFLAGS_HAIR_KAJIYA_KAY))
+    {
+        // Note: For Kajiya hair we currently rely on a single cubemap sample instead of two, as in practice smoothness of both lobe aren't too far from each other.
+        // and we take smoothness of the secondary lobe as it is often more rough (it is the colored one).
+        preLightData.iblPerceptualRoughness = bsdfData.secondaryPerceptualRoughness;
+        GetPreIntegratedFGDGGXAndDisneyDiffuse(NdotV, preLightData.iblPerceptualRoughness, bsdfData.fresnel0, preLightData.specularFGD, preLightData.diffuseFGD, unused);
+        // We used lambert for hair for now
+        preLightData.diffuseFGD = 1.0;
+    }
+    else
+    {
+        preLightData.iblPerceptualRoughness = bsdfData.perceptualRoughness;
+        preLightData.specularFGD = 1.0;
+        preLightData.diffuseFGD = 1.0;
+    }
 
-    float TdotV = dot(bsdfData.tangentWS, V);
-    float BdotV = dot(bsdfData.bitangentWS, V);
-
-    preLightData.partLambdaV = GetSmithJointGGXAnisoPartLambdaV(TdotV, BdotV, NdotV, bsdfData.roughnessT, bsdfData.roughnessB);
-
+    // perceptualRoughness is use as input and output here
     GetGGXAnisotropicModifiedNormalAndRoughness(bsdfData.bitangentWS, bsdfData.tangentWS, N, V, bsdfData.anisotropy, preLightData.iblPerceptualRoughness, iblN, preLightData.iblPerceptualRoughness);
 
     preLightData.iblR = reflect(-V, iblN);
@@ -509,13 +521,16 @@ IndirectLighting EvaluateBSDF_Env(  LightLoopContext lightLoopContext,
         iblMipLevel = PerceptualRoughnessToMipmapLevel(preLightData.iblPerceptualRoughness);
     }
 
-    // If it is a silk, we need to use the GGX convolution (slice0), otherwise the charlie convolution (slice1)
-    int sliceIndex = 0;
-
-    float4 preLD = SampleEnv(lightLoopContext, lightData.envIndex, R, iblMipLevel, sliceIndex);
+    float4 preLD = SampleEnv(lightLoopContext, lightData.envIndex, R, iblMipLevel);
     weight *= preLD.a; // Used by planar reflection to discard pixel
 
     envLighting = preLightData.specularFGD * preLD.rgb;
+
+    if (HasFlag(bsdfData.materialFeatures, MATERIALFEATUREFLAGS_HAIR_KAJIYA_KAY))
+    {
+        // We tint the HDRI with the secondary lob specular as it is more representatative of indirect lighting on hair.
+        envLighting *= bsdfData.secondarySpecularTint;
+    }
 
     UpdateLightingHierarchyWeights(hierarchyWeight, weight);
     envLighting *= weight * lightData.multiplier;

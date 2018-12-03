@@ -63,7 +63,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // Specular Color
             [SurfaceDataAttributes("Specular Tint", false, true)]
-            public Vector3 specularTint;
+            public float specularTint;
 
             [SurfaceDataAttributes("Secondary Specular Tint", false, true)]
             public Vector3 secondarySpecularTint;

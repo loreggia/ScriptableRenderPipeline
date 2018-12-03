@@ -80,7 +80,7 @@ struct SurfaceData
     float thickness;
     float3 tangentWS;
     float secondaryPerceptualSmoothness;
-    float3 specularTint;
+    float specularTint;
     float3 secondarySpecularTint;
     float specularShift;
     float secondarySpecularShift;
@@ -95,7 +95,7 @@ struct BSDFData
     float specularOcclusion;
     float3 diffuseColor;
     float3 fresnel0;
-    float3 specularTint;
+    float specularTint;
     float3 normalWS;
     float3 geomNormalWS;
     float perceptualRoughness;
@@ -168,7 +168,7 @@ void GetGeneratedSurfaceDataDebug(uint paramId, SurfaceData surfacedata, inout f
             result = surfacedata.secondaryPerceptualSmoothness.xxx;
             break;
         case DEBUGVIEW_HAIR_SURFACEDATA_SPECULAR_TINT:
-            result = surfacedata.specularTint;
+            result = surfacedata.specularTint.xxx;
             needLinearToSRGB = true;
             break;
         case DEBUGVIEW_HAIR_SURFACEDATA_SECONDARY_SPECULAR_TINT:
@@ -208,7 +208,7 @@ void GetGeneratedBSDFDataDebug(uint paramId, BSDFData bsdfdata, inout float3 res
             result = bsdfdata.fresnel0;
             break;
         case DEBUGVIEW_HAIR_BSDFDATA_SPECULAR_TINT:
-            result = bsdfdata.specularTint;
+            result = bsdfdata.specularTint.xxx;
             break;
         case DEBUGVIEW_HAIR_BSDFDATA_NORMAL_WS:
             result = bsdfdata.normalWS * 0.5 + 0.5;

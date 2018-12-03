@@ -575,17 +575,17 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
             if (MaterialTypeUsesSlotMask(SlotMask.SpecularTint))
             {
-                AddSlot(new ColorRGBMaterialSlot(SpecularTintSlotId, SpecularTintSlotName, SpecularTintSlotName, SlotType.Input, Color.white, ColorMode.Default, ShaderStageCapability.Fragment));
+                AddSlot(new Vector1MaterialSlot(SpecularTintSlotId, SpecularTintSlotName, SpecularTintSlotName, SlotType.Input, 0.8f, ShaderStageCapability.Fragment));
                 validSlots.Add(SpecularTintSlotId);
             }
             if (MaterialTypeUsesSlotMask(SlotMask.SpecularShift))
             {
-                AddSlot(new Vector1MaterialSlot(SpecularShiftSlotId, SpecularShiftSlotName, SpecularShiftSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                AddSlot(new Vector1MaterialSlot(SpecularShiftSlotId, SpecularShiftSlotName, SpecularShiftSlotName, SlotType.Input, 0.2f, ShaderStageCapability.Fragment));
                 validSlots.Add(SpecularShiftSlotId);
             }
             if (MaterialTypeUsesSlotMask(SlotMask.SecondarySpecularTint))
             {
-                AddSlot(new ColorRGBMaterialSlot(SecondarySpecularTintSlotId, SecondarySpecularTintSlotName, SecondarySpecularTintSlotName, SlotType.Input, Color.white, ColorMode.Default, ShaderStageCapability.Fragment));
+                AddSlot(new ColorRGBMaterialSlot(SecondarySpecularTintSlotId, SecondarySpecularTintSlotName, SecondarySpecularTintSlotName, SlotType.Input, Color.grey, ColorMode.Default, ShaderStageCapability.Fragment));
                 validSlots.Add(SecondarySpecularTintSlotId);
             }
             if (MaterialTypeUsesSlotMask(SlotMask.SecondarySmoothness))
