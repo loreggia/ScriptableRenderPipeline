@@ -575,7 +575,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
             if (MaterialTypeUsesSlotMask(SlotMask.SpecularTint))
             {
-                AddSlot(new Vector1MaterialSlot(SpecularTintSlotId, SpecularTintSlotName, SpecularTintSlotName, SlotType.Input, 0.8f, ShaderStageCapability.Fragment));
+                AddSlot(new ColorRGBMaterialSlot(SpecularTintSlotId, SpecularTintSlotName, SpecularTintSlotName, SlotType.Input, Color.white, ColorMode.Default, ShaderStageCapability.Fragment));
                 validSlots.Add(SpecularTintSlotId);
             }
             if (MaterialTypeUsesSlotMask(SlotMask.SpecularShift))
