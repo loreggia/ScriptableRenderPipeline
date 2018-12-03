@@ -14,8 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed stacklit transmission and sun highlight
 - Fixed decals with stereo rendering
 - Fixed flip logic for postprocessing + VR
-- Fixed SSR with Fabric master node
 - Fixed usage of SSR with transparent on all master node
+- Fixed SSR and microshadowing on fabric material
 
 ### Changed
 - ColorPyramid compute shader passes is swapped to pixel shader passes on platforms where the later is faster (Nintendo Switch).
