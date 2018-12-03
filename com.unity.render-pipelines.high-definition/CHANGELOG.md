@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added option to run Contact Shadows and Volumetrics Voxelization stage in Async Compute
 - Added camera freeze debug mode - Allow to visually see culling result for a camera
 - Added support of Gizmo rendering before and after postprocess in Editor
+- Added Reset behaviour in DebugMenu (ingame mapping is right joystick + B)
 
 ### Fixed
 - Fixed Debug.DrawLine and Debug.Ray call to work in game view
@@ -17,7 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed divide by 0 in refraction causing NaN
 - Fixed disable rough refraction support
 - Fixed refraction, SSS and atmospheric scattering for VR
-
+- Fixed windows and in-game DebugMenu sync.
+- Fixed FrameSettings' LitShaderMode sync when opening DebugMenu.
 
 ### Changed
 - Rename "Regular" in Diffusion profile UI "Thick Object"
