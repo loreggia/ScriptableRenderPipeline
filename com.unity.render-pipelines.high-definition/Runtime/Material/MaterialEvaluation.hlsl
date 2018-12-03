@@ -10,6 +10,7 @@ struct DirectLighting
 {
     float3 diffuse;
     float3 specular;
+    float shadow;
 };
 
 struct IndirectLighting

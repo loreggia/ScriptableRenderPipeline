@@ -195,9 +195,9 @@ VoxelLighting EvaluateVoxelLightingDirectional(LightLoopContext context, uint fe
         float3 L = -light.forward;
 
         // Pass the light direction as the normal to avoid issues with shadow biasing code.
-        float3 color; float attenuation;
+        float3 color; float attenuation; float shadow;
         EvaluateLight_Directional(context, posInput, light, unused, L, L, NdotL,
-                                  color, attenuation);
+                                  color, attenuation, shadow);
 
         // Important:
         // Ideally, all scattering calculations should use the jittered versions
@@ -309,10 +309,10 @@ VoxelLighting EvaluateVoxelLightingLocal(LightLoopContext context, uint featureF
                 ModifyDistancesForFillLighting(distances, light.size.x);
 
                 // Pass the light direction as the normal to avoid issues with shadow biasing code.
-                float3 color; float attenuation;
+                float3 color; float attenuation; float shadow;
                 EvaluateLight_Punctual(context, posInput, light, unused,
                                        L, L, NdotL, lightToSample, distances,
-                                       color, attenuation);
+                                       color, attenuation, shadow);
 
                 // Important:
                 // Ideally, all scattering calculations should use the jittered versions
@@ -379,10 +379,10 @@ VoxelLighting EvaluateVoxelLightingLocal(LightLoopContext context, uint featureF
                 float4 distances     = float4(1, 1, 1, distProj);
 
                 // Pass the light direction as the normal to avoid issues with shadow biasing code.
-                float3 color; float attenuation;
+                float3 color; float attenuation; float shadow;
                 EvaluateLight_Punctual(context, posInput, light, unused,
                                        L, L, NdotL, lightToSample, distances,
-                                       color, attenuation);
+                                       color, attenuation, shadow);
 
                 // Important:
                 // Ideally, all scattering calculations should use the jittered versions

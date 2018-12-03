@@ -187,7 +187,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         public static readonly int _TransmissionTintsAndFresnel0 = Shader.PropertyToID("_TransmissionTintsAndFresnel0");
         public static readonly int specularLightingUAV = Shader.PropertyToID("specularLightingUAV");
         public static readonly int diffuseLightingUAV = Shader.PropertyToID("diffuseLightingUAV");
-
+        public static readonly int shadowIndexUAV = Shader.PropertyToID("shadowIndexUAV");
+        
         public static readonly int g_TileListOffset = Shader.PropertyToID("g_TileListOffset");
 
         public static readonly int _LtcData = Shader.PropertyToID("_LtcData");
@@ -428,5 +429,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // Preintegrated texture name
         public static readonly int _PreIntegratedFGD_GGXDisneyDiffuse = Shader.PropertyToID("_PreIntegratedFGD_GGXDisneyDiffuse");
         public static readonly int _PreIntegratedFGD_CharlieAndFabric = Shader.PropertyToID("_PreIntegratedFGD_CharlieAndFabric");
+
+        public static readonly int _ShadowIndexBuffer = Shader.PropertyToID("_ShadowIndexBuffer");
     }
 }

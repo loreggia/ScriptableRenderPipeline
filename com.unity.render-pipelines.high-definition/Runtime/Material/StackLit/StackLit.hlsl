@@ -2890,8 +2890,9 @@ DirectLighting EvaluateBSDF_Directional(LightLoopContext lightLoopContext,
     // color and attenuation are outputted  by EvaluateLight:
     float3 color;
     float attenuation;
+    float shadow;
     EvaluateLight_Directional(lightLoopContext, posInput, lightData, builtinData, N, L, 1,
-                              color, attenuation);
+                              color, attenuation, shadow);
 
     float intensity = max(0, attenuation); // Warning: attenuation can be greater than 1 due to the inverse square attenuation (when position is close to light)
 
@@ -2976,9 +2977,10 @@ DirectLighting EvaluateBSDF_Punctual(LightLoopContext lightLoopContext,
 
     float3 color;
     float attenuation;
+    float shadow;
 
     EvaluateLight_Punctual(lightLoopContext, posInput, lightData, builtinData, N, L, 1, lightToSample, distances,
-                           color, attenuation);
+                           color, attenuation, shadow);
 
 
     float intensity = max(0, attenuation); // Warning: attenuation can be greater than 1 due to the inverse square attenuation (when position is close to light)

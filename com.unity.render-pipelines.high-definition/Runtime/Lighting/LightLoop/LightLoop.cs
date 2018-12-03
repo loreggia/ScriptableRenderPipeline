@@ -2603,6 +2603,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                         // TODO: Is it possible to setup this outside the loop ? Can figure out how, get this: Property (specularLightingUAV) at kernel index (21) is not set
                         cmd.SetComputeTextureParam(deferredComputeShader, kernel, HDShaderIDs.specularLightingUAV, colorBuffers[0]);
                         cmd.SetComputeTextureParam(deferredComputeShader, kernel, HDShaderIDs.diffuseLightingUAV,  colorBuffers[1]);
+                        cmd.SetComputeTextureParam(deferredComputeShader, kernel, HDShaderIDs.shadowIndexUAV,  colorBuffers[2]);
 
                         // always do deferred lighting in blocks of 16x16 (not same as tiled light size)
 

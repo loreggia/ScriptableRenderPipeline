@@ -103,11 +103,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         Material m_Blit;
         Material m_ErrorMaterial;
 
-        RenderTargetIdentifier[] m_MRTCache2 = new RenderTargetIdentifier[2];
+        RenderTargetIdentifier[] m_MRTCache2 = new RenderTargetIdentifier[3];
 
         // 'm_CameraColorBuffer' does not contain diffuse lighting of SSS materials until the SSS pass. It is stored within 'm_CameraSssDiffuseLightingBuffer'.
         RTHandleSystem.RTHandle m_CameraColorBuffer;
         RTHandleSystem.RTHandle m_CameraSssDiffuseLightingBuffer;
+        RTHandleSystem.RTHandle m_CameraShadowIndexBuffer;
 
         RTHandleSystem.RTHandle m_ScreenSpaceShadowsBuffer;
         RTHandleSystem.RTHandle m_AmbientOcclusionBuffer;
@@ -179,6 +180,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         // Use to detect frame changes
         uint  m_FrameCount;
         float m_LastTime, m_Time;
+
+        Material m_DrawShadowAreas;
 
         public int GetCurrentShadowCount() { return m_LightLoop.GetCurrentShadowCount(); }
         public int GetDecalAtlasMipCount()
@@ -292,6 +295,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             m_CopyDepth = CoreUtils.CreateEngineMaterial(asset.renderPipelineResources.shaders.copyDepthBufferPS);
 
+            m_DrawShadowAreas = CoreUtils.CreateEngineMaterial(asset.renderPipelineResources.shaders.drawShadowAreasPS);
+
             InitializeDebugMaterials();
 
             m_MaterialList.ForEach(material => material.Build(asset));
@@ -371,6 +376,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             m_CameraColorBuffer = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.ARGBHalf, sRGB: false, enableRandomWrite: true, useMipMap: false, name: "CameraColor");
             m_CameraSssDiffuseLightingBuffer = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RGB111110Float, sRGB: false, enableRandomWrite: true, name: "CameraSSSDiffuseLighting");
+            m_CameraShadowIndexBuffer = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: RenderTextureFormat.RInt, sRGB: false, enableRandomWrite: true, name: "CameraShadowIndex", slices: 32, dimension: TextureDimension.Tex2DArray);
 
             if (settings.supportSSAO)
             {
@@ -417,6 +423,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             RTHandles.Release(m_CameraColorBuffer);
             RTHandles.Release(m_CameraSssDiffuseLightingBuffer);
+            RTHandles.Release(m_CameraShadowIndexBuffer);
 
             RTHandles.Release(m_AmbientOcclusionBuffer);
             RTHandles.Release(m_DistortionBuffer);
@@ -625,6 +632,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             CoreUtils.Destroy(m_Blit);
             CoreUtils.Destroy(m_CopyDepth);
             CoreUtils.Destroy(m_ErrorMaterial);
+            CoreUtils.Destroy(m_DrawShadowAreas);
 
             m_SSSBufferManager.Cleanup();
             m_SharedRTManager.Cleanup();
@@ -1412,6 +1420,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                         StartStereoRendering(cmd, renderContext, camera);
 
+                        RenderShadowAreas(renderContext, cmd, hdCamera);
 
                         // Final blit
                         if (hdCamera.frameSettings.enablePostprocess)
@@ -1494,6 +1503,15 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 #endif
 
             } // For each camera
+        }
+
+        private void RenderShadowAreas(ScriptableRenderContext renderContext, CommandBuffer cmd, HDCamera hdCamera)
+        {
+            using (new ProfilingSample(cmd, "RenderShadowAreas"))
+            {
+                m_DrawShadowAreas.SetTexture(HDShaderIDs._ShadowIndexBuffer, m_CameraShadowIndexBuffer);
+                HDUtils.DrawFullScreen(cmd, hdCamera, m_DrawShadowAreas, m_CameraColorBuffer);
+            }
         }
 
         void RenderOpaqueRenderList(CullResults cull,
@@ -1921,6 +1939,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             m_MRTCache2[0] = m_CameraColorBuffer;
             m_MRTCache2[1] = m_CameraSssDiffuseLightingBuffer;
+            m_MRTCache2[2] = m_CameraShadowIndexBuffer;
             var depthTexture = m_SharedRTManager.GetDepthTexture();
 
             var options = new LightLoop.LightingPassOptions();
@@ -2557,6 +2576,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                         HDUtils.SetRenderTarget(cmd, hdCamera, hdCamera.frameSettings.enableMSAA ? m_CameraColorMSAABuffer : m_CameraColorBuffer, m_SharedRTManager.GetDepthStencilBuffer(hdCamera.frameSettings.enableMSAA), ClearFlag.Color, clearColor);
 
                     }
+                }
+
+                // clear shadow index buffer
+                using (new ProfilingSample(cmd, "Clear shadow index buffer"))
+                {
+                    HDUtils.SetRenderTarget(cmd, hdCamera, m_CameraShadowIndexBuffer, ClearFlag.Color);
                 }
 
                 if (settings.enableSubsurfaceScattering)

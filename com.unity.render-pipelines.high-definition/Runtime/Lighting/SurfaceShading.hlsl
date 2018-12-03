@@ -81,9 +81,10 @@ DirectLighting ShadeSurface_Directional(LightLoopContext lightLoopContext,
     // Caution: this function modifies N, NdotL, contactShadowIndex and shadowMaskSelector.
     float3 transmittance = PreEvaluateDirectionalLightTransmission(bsdfData, light, N, NdotL);
 
-    float3 color; float attenuation;
+    float3 color; float attenuation; float shadow;
     EvaluateLight_Directional(lightLoopContext, posInput, light, builtinData, N, L, NdotL,
-                              color, attenuation);
+                              color, attenuation, shadow);
+    lighting.shadow = shadow;
 
     // TODO: transmittance contributes to attenuation, how can we use it for early-out?
     if (attenuation > 0)
@@ -234,9 +235,10 @@ DirectLighting ShadeSurface_Punctual(LightLoopContext lightLoopContext,
     // Caution: this function modifies N, NdotL, shadowIndex, contactShadowIndex and shadowMaskSelector.
     float3 transmittance = PreEvaluatePunctualLightTransmission(lightLoopContext, posInput, bsdfData,
                                                                 light, distances.x, N, L, NdotL);
-    float3 color; float attenuation;
+    float3 color; float attenuation; float shadow;
     EvaluateLight_Punctual(lightLoopContext, posInput, light, builtinData, N, L, NdotL, lightToSample, distances,
-                           color, attenuation);
+                           color, attenuation, shadow);
+    lighting.shadow = shadow;
 
     // TODO: transmittance contributes to attenuation, how can we use it for early-out?
     if (attenuation > 0)

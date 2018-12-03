@@ -45,13 +45,13 @@ float EvaluateRuntimeSunShadow(LightLoopContext lightLoopContext, PositionInputs
 void EvaluateLight_Directional(LightLoopContext lightLoopContext, PositionInputs posInput,
                                DirectionalLightData light, BuiltinData builtinData,
                                float3 N, float3 L, float NdotL,
-                               out float3 color, out float attenuation)
+                               out float3 color, out float attenuation, out float shadow)
 {
     color = attenuation = 0;
     if ((light.lightDimmer <= 0) || (NdotL <= 0)) return;
 
     float3 positionWS = posInput.positionWS;
-    float  shadow     = 1.0;
+    shadow     = 1.0;
     float  shadowMask = 1.0;
 
     color       = light.color;
@@ -207,13 +207,13 @@ float4 EvaluateCookie_Punctual(LightLoopContext lightLoopContext, LightData ligh
 void EvaluateLight_Punctual(LightLoopContext lightLoopContext, PositionInputs posInput,
                             LightData light, BuiltinData builtinData,
                             float3 N, float3 L, float NdotL, float3 lightToSample, float4 distances,
-                            out float3 color, out float attenuation)
+                            out float3 color, out float attenuation, out float shadow)
 {
     color = attenuation = 0;
     if ((light.lightDimmer <= 0) || (NdotL <= 0)) return;
 
     float3 positionWS = posInput.positionWS;
-    float  shadow     = 1.0;
+    shadow     = 1.0;
     float  shadowMask = 1.0;
 
     color       = light.color;
@@ -272,6 +272,7 @@ void EvaluateLight_Punctual(LightLoopContext lightLoopContext, PositionInputs po
     if (_DebugShadowMapMode == SHADOWMAPDEBUGMODE_SINGLE_SHADOW && light.shadowIndex == _DebugSingleShadowIndex)
         debugShadowAttenuation = step(FLT_EPS, attenuation) * shadow;
 #endif
+
 
     attenuation *= shadow;
 }

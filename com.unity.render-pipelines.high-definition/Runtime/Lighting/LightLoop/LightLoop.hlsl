@@ -62,6 +62,11 @@ void ApplyDebug(LightLoopContext lightLoopContext, float3 positionWS, inout floa
 #endif
 }
 
+void SetShadowIndexData(RWTexture2DArray<int> shadowIndexUAV, uint2 pixelCoord, uint lightIndex, DirectLighting lighting)
+{
+    shadowIndexUAV[uint3(pixelCoord, lightIndex)] = lighting.shadow > 0 ? 0 : 1;
+}
+
 // Factor all test so we can disable it easily
 bool IsMatchingLightLayer(uint lightLayers, uint renderingLayers)
 {
@@ -69,6 +74,10 @@ bool IsMatchingLightLayer(uint lightLayers, uint renderingLayers)
 }
 
 void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BSDFData bsdfData, BuiltinData builtinData, uint featureFlags,
+                #ifdef IS_COMPUTE
+                uint2 pixelCoord,
+                RWTexture2DArray<int> shadowIndexUAV,
+                #endif
                 out float3 diffuseLighting,
                 out float3 specularLighting)
 {
@@ -134,6 +143,9 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
             {
                 DirectLighting lighting = EvaluateBSDF_Directional(context, V, posInput, preLightData, _DirectionalLightDatas[i], bsdfData, builtinData);
                 AccumulateDirectLighting(lighting, aggregateLighting);
+#ifdef IS_COMPUTE
+                SetShadowIndexData(shadowIndexUAV, pixelCoord, 0, lighting);
+#endif
             }
         }
     }
@@ -204,6 +216,9 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
                 {
                     DirectLighting lighting = EvaluateBSDF_Punctual(context, V, posInput, preLightData, s_lightData, bsdfData, builtinData);
                     AccumulateDirectLighting(lighting, aggregateLighting);
+#ifdef IS_COMPUTE
+                    SetShadowIndexData(shadowIndexUAV, pixelCoord, 0, lighting);
+#endif
                 }
             }
         }
@@ -240,6 +255,9 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
                 {
                     DirectLighting lighting = EvaluateBSDF_Area(context, V, posInput, preLightData, lightData, bsdfData, builtinData);
                     AccumulateDirectLighting(lighting, aggregateLighting);
+#ifdef IS_COMPUTE
+                    SetShadowIndexData(shadowIndexUAV, pixelCoord, 0, lighting);
+#endif
                 }
 
                 lightData = FetchLight(lightStart, min(++i, last));
@@ -253,6 +271,9 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
                 {
                     DirectLighting lighting = EvaluateBSDF_Area(context, V, posInput, preLightData, lightData, bsdfData, builtinData);
                     AccumulateDirectLighting(lighting, aggregateLighting);
+#ifdef IS_COMPUTE
+                    SetShadowIndexData(shadowIndexUAV, pixelCoord, 0, lighting);
+#endif
                 }
 
                 lightData = FetchLight(lightStart, min(++i, last));
