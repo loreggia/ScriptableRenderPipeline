@@ -109,7 +109,17 @@ namespace UnityEngine.Experimental.Rendering
             refreshEditorRequested = true;
         }
 
-        public void Reset() => resetData?.Invoke();
+        public void Reset()
+        {
+            resetData?.Invoke();
+            ReDrawOnScreenDebug();
+        }
+
+        public void ReDrawOnScreenDebug()
+        {
+            if (displayRuntimeUI)
+                m_RootUICanvas?.ResetAllHierarchy();
+        }
         
         public void RegisterData(IDebugData data) => resetData += data.GetReset();
 
