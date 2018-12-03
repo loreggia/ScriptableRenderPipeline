@@ -1,16 +1,20 @@
 using UnityEditor.Experimental.Rendering.TestFramework;
 using NUnit.Framework;
 using System;
+using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
 {
     public class CameraSettingsUtilitiesTests
     {
+        Object m_ToClean;
+
         [Test]
         public void ApplySettingsThrowIfFrameSettingsIsNull()
         {
             var settings = new CameraSettings();
             var go = new GameObject();
+            m_ToClean = go;
             var cam = go.AddComponent<Camera>();
 
             Assert.Throws<InvalidOperationException>(() => cam.ApplySettings(settings));
@@ -73,6 +77,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                 };
 
                 var go = new GameObject("TestObject");
+                m_ToClean = go;
                 var cam = go.AddComponent<Camera>();
 
                 cam.ApplySettings(settings);
@@ -122,6 +127,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
 
                 Object.DestroyImmediate(go);
             }
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (m_ToClean != null)
+                CoreUtils.Destroy(m_ToClean);
         }
     }
 }
