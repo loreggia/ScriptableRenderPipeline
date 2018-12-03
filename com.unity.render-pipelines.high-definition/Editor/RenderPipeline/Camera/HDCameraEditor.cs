@@ -81,15 +81,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         public override void OnInspectorGUI()
         {
-            var d = m_SerializedCamera;
+            m_SerializedCamera.Update();
+            
+            HDCameraUI.Inspector.Draw(m_SerializedCamera, this);
 
-            d.Update();
-
-#pragma warning disable 612 //Draw
-            HDCameraUI.Inspector.Draw(d, this);
-#pragma warning restore 612
-
-            d.Apply();
+            m_SerializedCamera.Apply();
         }
 
         RenderTexture GetPreviewTextureWithSize(int width, int height)
