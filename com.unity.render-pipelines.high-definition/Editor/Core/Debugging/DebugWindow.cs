@@ -437,7 +437,10 @@ namespace UnityEditor.Experimental.Rendering
                     }
 
                     if (changedScope.changed)
+                    {
                         m_Settings.currentStateHash = ComputeStateHash();
+                        DebugManager.instance.ReDrawOnScreenDebug();
+                    }
                 }
 
                 // Splitter events
