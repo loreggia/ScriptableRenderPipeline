@@ -832,7 +832,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 return false;
 
             // Discard light if disabled in debug display settings
-            if (!debugDisplaySettings.m_Data.lightingDebugSettings.showDirectionalLight)
+            if (!debugDisplaySettings.data.lightingDebugSettings.showDirectionalLight)
                 return false;
 
             var lightData = new DirectionalLightData();
@@ -976,12 +976,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // Discard light if disabled in debug display settings
             if (lightData.lightType.IsAreaLight())
             {
-                if (!debugDisplaySettings.m_Data.lightingDebugSettings.showAreaLight)
+                if (!debugDisplaySettings.data.lightingDebugSettings.showAreaLight)
                     return false;
             }
             else
             {
-                if (!debugDisplaySettings.m_Data.lightingDebugSettings.showPunctualLight)
+                if (!debugDisplaySettings.data.lightingDebugSettings.showPunctualLight)
                     return false;
             }
 
@@ -1361,7 +1361,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 return false;
 
             // Discard probe if disabled in debug menu
-            if (!debugDisplaySettings.m_Data.lightingDebugSettings.showReflectionProbe)
+            if (!debugDisplaySettings.data.lightingDebugSettings.showReflectionProbe)
                 return false;
 
             var capturePosition = Vector3.zero;
@@ -1762,7 +1762,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                     // Now that all the lights have requested a shadow resolution, we can layout them in the atlas
                     // And if needed rescale the whole atlas
-                    m_ShadowManager.LayoutShadowMaps(debugDisplaySettings.m_Data.lightingDebugSettings);
+                    m_ShadowManager.LayoutShadowMaps(debugDisplaySettings.data.lightingDebugSettings);
 
                     // TODO: Refactor shadow management
                     // The good way of managing shadow:
@@ -1802,8 +1802,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                             shadowIndex = additionalLightData.UpdateShadowRequest(hdCamera, m_ShadowManager, light, cullResults, lightIndex, out shadowRequestCount);
 
 #if UNITY_EDITOR
-                            if ((debugDisplaySettings.m_Data.lightingDebugSettings.shadowDebugUseSelection
-                                    || debugDisplaySettings.m_Data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.SingleShadow)
+                            if ((debugDisplaySettings.data.lightingDebugSettings.shadowDebugUseSelection
+                                    || debugDisplaySettings.data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.SingleShadow)
                                 && UnityEditor.Selection.activeGameObject == lightComponent.gameObject)
                             {
                                 m_DebugSelectedLightShadowIndex = shadowIndex;
@@ -2043,11 +2043,11 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_enableBakeShadowMask = m_enableBakeShadowMask && hdCamera.frameSettings.enableShadowMask;
 
             // We push this parameter here because we know that normal/deferred shadows are not yet rendered
-            if (debugDisplaySettings.m_Data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.SingleShadow)
+            if (debugDisplaySettings.data.lightingDebugSettings.shadowDebugMode == ShadowMapDebugMode.SingleShadow)
             {
-                int shadowIndex = (int)debugDisplaySettings.m_Data.lightingDebugSettings.shadowMapIndex;
+                int shadowIndex = (int)debugDisplaySettings.data.lightingDebugSettings.shadowMapIndex;
 
-                if (debugDisplaySettings.m_Data.lightingDebugSettings.shadowDebugUseSelection)
+                if (debugDisplaySettings.data.lightingDebugSettings.shadowDebugUseSelection)
                     shadowIndex = m_DebugSelectedLightShadowIndex;
                 cmd.SetGlobalInt(HDShaderIDs._DebugSingleShadowIndex, shadowIndex);
             }
@@ -2690,7 +2690,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
         public void RenderDebugOverlay(HDCamera hdCamera, CommandBuffer cmd, DebugDisplaySettings debugDisplaySettings, ref float x, ref float y, float overlaySize, float width, CullingResults cullResults)
         {
-            LightingDebugSettings lightingDebug = debugDisplaySettings.m_Data.lightingDebugSettings;
+            LightingDebugSettings lightingDebug = debugDisplaySettings.data.lightingDebugSettings;
 
             using (new ProfilingSample(cmd, "Tiled/cluster Lighting Debug", CustomSamplerId.TPTiledLightingDebug.GetSampler()))
             {
