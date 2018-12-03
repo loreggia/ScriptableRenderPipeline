@@ -89,6 +89,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                 },
             };
 
+            Object m_ToClean;
+
             [Test, TestCaseSource(nameof(s_LegacyProbeDatas))]
             public void Test(LegacyProbeData legacyProbeData)
             {
@@ -111,6 +113,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                     var capturePositionPS = (Vector3)proxyToWorld.inverse.MultiplyPoint(legacyProbeData.capturePositionWS);
 
                     var instance = Object.Instantiate(prefab);
+                    m_ToClean = instance;
 
                     var probe = instance.GetComponent<HDAdditionalReflectionData>()
                         ?? instance.AddComponent<HDAdditionalReflectionData>();
@@ -132,6 +135,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                     Assert.IsTrue((capturePositionPS - settings.proxySettings.capturePositionProxySpace).sqrMagnitude < 0.001f);
                     Assert.AreEqual(ProbeSettings.ProbeType.ReflectionProbe, settings.type);
                 }
+            }
+
+            [TearDown]
+            public void TearDown()
+            {
+                if (m_ToClean != null)
+                    CoreUtils.Destroy(m_ToClean);
             }
 
             string GeneratePrefabYAML(LegacyProbeData legacyProbeData)
@@ -434,6 +444,8 @@ MonoBehaviour:
                 }
             };
 
+            Object m_ToClean;
+
             [Test, TestCaseSource(nameof(s_LegacyProbeDatas))]
             public void Test(LegacyProbeData legacyProbeData)
             {
@@ -448,6 +460,7 @@ MonoBehaviour:
                     var capturePositionPS = (Vector3)proxyToWorld.inverse.MultiplyPoint(legacyProbeData.capturePositionWS);
 
                     var instance = Object.Instantiate(prefab);
+                    m_ToClean = instance;
 
                     var probe = instance.GetComponent<HDAdditionalReflectionData>()
                         ?? instance.AddComponent<HDAdditionalReflectionData>();
@@ -486,6 +499,13 @@ MonoBehaviour:
                     }
                     Assert.AreEqual(targetRealtimeMode, settings.realtimeMode);
                 }
+            }
+
+            [TearDown]
+            public void TearDown()
+            {
+                if (m_ToClean != null)
+                    CoreUtils.Destroy(m_ToClean);
             }
 
             string GeneratePrefabYAML(LegacyProbeData legacyProbeData)

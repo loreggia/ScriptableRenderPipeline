@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEditor.Experimental.Rendering.TestFramework;
+using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
 {
@@ -89,6 +90,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                 },
             };
 
+            Object m_ToClean;
+
             [Test, TestCaseSource(nameof(s_LegacyProbeDatas))]
             public void Test(LegacyProbeData legacyProbeData)
             {
@@ -111,6 +114,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                     var mirrorPositionPS = (Vector3)proxyToWorld.inverse.MultiplyPoint(legacyProbeData.mirrorPositionWS);
 
                     var instance = Object.Instantiate(prefab);
+                    m_ToClean = instance;
 
                     var probe = instance.GetComponent<PlanarReflectionProbe>();
                     prefab.SetActive(true);
@@ -131,6 +135,13 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline.Tests
                     Assert.IsTrue((mirrorPositionPS - settings.proxySettings.mirrorPositionProxySpace).sqrMagnitude < 0.001f);
                     Assert.AreEqual(ProbeSettings.ProbeType.PlanarProbe, settings.type);
                 }
+            }
+
+            [TearDown]
+            public void TearDown()
+            {
+                if (m_ToClean != null)
+                    CoreUtils.Destroy(m_ToClean);
             }
 
             string GeneratePrefabYAML(LegacyProbeData legacyProbeData)
